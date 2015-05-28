@@ -19,12 +19,11 @@
 - (sqlite3 *)sqlite;
 - (BLDBCache *)cachedObjects;
 - (NSMutableArray *)changedObjects;
+- (void)validateRead;
+- (void)validateReadWriteInTransaction;
 
 - (void)refreshWithInsertObjects:(NSArray *)insertObjects
                    updateObjects:(NSArray *)updateObjects
                    deleteObjects:(NSArray *)deleteObjects;
-
-- (void)performReadBlockAndWait:(void(^)(void))block;
-- (void)performReadWriteBlockAndWait:(void(^)(void))block;
 
 @end

@@ -1,8 +1,8 @@
 //
-//  BLFindDataTests.m
+//  BLMemoryDatabaseTest.m
 //  BLDatabase
 //
-//  Created by alibaba on 15/5/19.
+//  Created by alibaba on 15/5/21.
 //  Copyright (c) 2015年 wxw. All rights reserved.
 //
 
@@ -15,18 +15,18 @@
 #import "BLTestObject.h"
 #import "BLAccount.h"
 
-@interface BLDiskDatabaseTests : XCTestCase
+@interface BLMemoryDatabaseTest : XCTestCase
 
 @end
 
-@implementation BLDiskDatabaseTests
+@implementation BLMemoryDatabaseTest
 
 - (void)setUp {
     [super setUp];
     // Put setup code here. This method is called before the invocation of each test method in the class.
     
-    BLDatabase *database = [[BLStoreManager shareInstance] database];
-    BLDatabaseConnection *connection = [[BLStoreManager shareInstance] uiConnection];
+    BLDatabase *database = [[BLStoreManager shareInstance] mDatabase];
+    BLDatabaseConnection *connection = [[BLStoreManager shareInstance] mConnection];
     
     [database setSchemaVersion:1 withMigrationBlock:^(BLDatabaseConnection *databaseConnection, NSUInteger oldSchemaVersion) {
         [BLTestObject createTableAndIndexIfNeededInDatabaseConnection:databaseConnection];
@@ -49,7 +49,7 @@
     // Put teardown code here. This method is called after the invocation of each test method in the class.
     [super tearDown];
     
-    BLDatabaseConnection *connection = [[BLStoreManager shareInstance] uiConnection];
+    BLDatabaseConnection *connection = [[BLStoreManager shareInstance] mConnection];
     
     [connection performReadWriteBlockAndWaitInTransaction:^(BOOL *rollback) {
         NSArray *result = [BLTestObject findObjectsInDatabaseConnection:connection];
@@ -65,7 +65,7 @@
 
 - (void)testInsert {
     // This is an example of a functional test case.
-    BLDatabaseConnection *connection = [[BLStoreManager shareInstance] uiConnection];
+    BLDatabaseConnection *connection = [[BLStoreManager shareInstance] mConnection];
     
     int count = 100;
     [connection performReadWriteBlockAndWaitInTransaction:^(BOOL *rollback) {
@@ -83,7 +83,7 @@
 }
 
 - (void)testFindWithSql {
-    BLDatabaseConnection *connection = [[BLStoreManager shareInstance] uiConnection];
+    BLDatabaseConnection *connection = [[BLStoreManager shareInstance] mConnection];
     
     int count = 100;
     [connection performReadWriteBlockAndWaitInTransaction:^(BOOL *rollback) {
@@ -111,7 +111,7 @@
 }
 
 - (void)testFindWithPredicate {
-    BLDatabaseConnection *connection = [[BLStoreManager shareInstance] uiConnection];
+    BLDatabaseConnection *connection = [[BLStoreManager shareInstance] mConnection];
     
     int count = 100;
     [connection performReadWriteBlockAndWaitInTransaction:^(BOOL *rollback) {
@@ -140,7 +140,7 @@
 
 - (void)testFault
 {
-    BLDatabaseConnection *connection = [[BLStoreManager shareInstance] uiConnection];
+    BLDatabaseConnection *connection = [[BLStoreManager shareInstance] mConnection];
     
     int count = 1;
     [connection performReadWriteBlockAndWaitInTransaction:^(BOOL *rollback) {
@@ -166,7 +166,7 @@
 
 - (void)testChangedFieldNames
 {
-    BLDatabaseConnection *connection = [[BLStoreManager shareInstance] uiConnection];
+    BLDatabaseConnection *connection = [[BLStoreManager shareInstance] mConnection];
     
     int count = 1;
     [connection performReadWriteBlockAndWaitInTransaction:^(BOOL *rollback) {
@@ -190,7 +190,7 @@
 
 - (void)testOneToOne
 {
-    BLDatabaseConnection *connection = [[BLStoreManager shareInstance] uiConnection];
+    BLDatabaseConnection *connection = [[BLStoreManager shareInstance] mConnection];
     
     [connection performReadWriteBlockAndWaitInTransaction:^(BOOL *rollback) {
         BLAccount *account = [BLAccount new];
@@ -210,7 +210,7 @@
 
 - (void)testOneToMany
 {
-    BLDatabaseConnection *connection = [[BLStoreManager shareInstance] uiConnection];
+    BLDatabaseConnection *connection = [[BLStoreManager shareInstance] mConnection];
     
     [connection performReadWriteBlockAndWaitInTransaction:^(BOOL *rollback) {
         BLAccount *account = [BLAccount new];
@@ -233,8 +233,8 @@
 
 - (void)testNotification
 {
-    BLDatabase *database = [[BLStoreManager shareInstance] database];
-    BLDatabaseConnection *connection = [[BLStoreManager shareInstance] uiConnection];
+    BLDatabase *database = [[BLStoreManager shareInstance] mDatabase];
+    BLDatabaseConnection *connection = [[BLStoreManager shareInstance] mConnection];
     
     NSInteger insert = 50;
     NSInteger update = 50;
@@ -290,8 +290,8 @@
 
 - (void)testMergeInsertUpdateNotification
 {
-    BLDatabase *database = [[BLStoreManager shareInstance] database];
-    BLDatabaseConnection *connection = [[BLStoreManager shareInstance] uiConnection];
+    BLDatabase *database = [[BLStoreManager shareInstance] mDatabase];
+    BLDatabaseConnection *connection = [[BLStoreManager shareInstance] mConnection];
     
     id observer = [[NSNotificationCenter defaultCenter] addObserverForName:BLDatabaseChangedNotification
                                                                     object:database
@@ -322,8 +322,8 @@
 
 - (void)testMergeInsertDeleteNotification
 {
-    BLDatabase *database = [[BLStoreManager shareInstance] database];
-    BLDatabaseConnection *connection = [[BLStoreManager shareInstance] uiConnection];
+    BLDatabase *database = [[BLStoreManager shareInstance] mDatabase];
+    BLDatabaseConnection *connection = [[BLStoreManager shareInstance] mConnection];
     
     id observer = [[NSNotificationCenter defaultCenter] addObserverForName:BLDatabaseChangedNotification
                                                                     object:database
@@ -347,8 +347,8 @@
 
 - (void)testMergeUpdateUpdateNotification
 {
-    BLDatabase *database = [[BLStoreManager shareInstance] database];
-    BLDatabaseConnection *connection = [[BLStoreManager shareInstance] uiConnection];
+    BLDatabase *database = [[BLStoreManager shareInstance] mDatabase];
+    BLDatabaseConnection *connection = [[BLStoreManager shareInstance] mConnection];
     
     __block NSString *objectID = nil;
     [connection performReadWriteBlockAndWaitInTransaction:^(BOOL *rollback) {
@@ -387,8 +387,8 @@
 
 - (void)testMergeUpdateDeleteNotification
 {
-    BLDatabase *database = [[BLStoreManager shareInstance] database];
-    BLDatabaseConnection *connection = [[BLStoreManager shareInstance] uiConnection];
+    BLDatabase *database = [[BLStoreManager shareInstance] mDatabase];
+    BLDatabaseConnection *connection = [[BLStoreManager shareInstance] mConnection];
     
     __block NSString *objectID = nil;
     [connection performReadWriteBlockAndWaitInTransaction:^(BOOL *rollback) {
@@ -426,8 +426,8 @@
 
 - (void)testMergeDeleteInsertNotification
 {
-    BLDatabase *database = [[BLStoreManager shareInstance] database];
-    BLDatabaseConnection *connection = [[BLStoreManager shareInstance] uiConnection];
+    BLDatabase *database = [[BLStoreManager shareInstance] mDatabase];
+    BLDatabaseConnection *connection = [[BLStoreManager shareInstance] mConnection];
     
     __block NSString *objectID = nil;
     [connection performReadWriteBlockAndWaitInTransaction:^(BOOL *rollback) {
@@ -461,22 +461,5 @@
     
     [[NSNotificationCenter defaultCenter] removeObserver:observer name:BLDatabaseChangedNotification object:database];
 }
-
-//- (void)testInsertPerformance
-//{
-//    BLDatabaseConnection *connection = [[BLStoreManager shareInstance] uiConnection];
-//    
-//    [self measureBlock:^{
-//        [connection performReadWriteBlockAndWaitInTransaction:^(BOOL *rollback) {
-//            for (int i = 0; i < 100; i++) {
-//                BLTestObject *testObject = [BLTestObject new];
-//                testObject.age = 20;
-//                testObject.name = @"alibaba";
-//                testObject.groupName = @"aliyun";
-//                [connection insertObject:testObject];
-//            }
-//        }];
-//    }];
-//}
 
 @end

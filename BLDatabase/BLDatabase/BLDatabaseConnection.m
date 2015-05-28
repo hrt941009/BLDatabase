@@ -16,7 +16,7 @@
 #import "FMDatabase+Private.h"
 #import "BLDBChangedObject.h"
 
-@interface BLDatabaseConnection ()
+@interface BLDatabaseConnection () <BLDBCacheDelegate>
 {
     void                *readSpecificKey;
     dispatch_queue_t    readQueue;
@@ -36,9 +36,15 @@
 
 - (instancetype)initWithDatabase:(BLDatabase *)database
 {
+    return [self initWithDatabase:database withType:BLPrivateQueueDatabaseConnectionType];
+}
+
+- (instancetype)initWithDatabase:(BLDatabase *)database withType:(BLDatabaseConnectionType)type
+{
     self = [super init];
     if (self) {
         _database = database;
+        _type = type;
         _fmdb = [[FMDatabase alloc] initWithPath:database.databasePath];
         int flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_NOMUTEX | SQLITE_OPEN_PRIVATECACHE;
         [_fmdb openWithFlags:flags];
@@ -54,13 +60,18 @@
         
         sqlite3_wal_checkpoint(self.sqlite, NULL);
         
-        self->readQueue = dispatch_queue_create("com.database.read", DISPATCH_QUEUE_SERIAL);
-        dispatch_queue_set_specific(self->readQueue,
-                                    &self->readSpecificKey,
-                                    (__bridge void *)self,
-                                    NULL);
+        if (_type == BLMainQueueDatabaseConnectionType) {
+            self->readQueue = dispatch_get_main_queue();
+        } else {
+            self->readQueue = dispatch_queue_create("com.database.read", DISPATCH_QUEUE_SERIAL);
+            dispatch_queue_set_specific(self->readQueue,
+                                        &self->readSpecificKey,
+                                        (__bridge void *)self,
+                                        NULL);
+        }
         
         _dbCache = [BLDBCache new];
+        _dbCache.delegate = self;
         _cacheCountLimit = 500;
         _dbCache.countLimit = _cacheCountLimit;
         _changedObjects = [NSMutableArray array];
@@ -102,13 +113,27 @@
 
 - (void)setCacheCountLimit:(NSUInteger)cacheCountLimit
 {
-    [self performReadWriteBlockAndWait:^{
-        _cacheCountLimit = cacheCountLimit;
-        _dbCache.countLimit = cacheCountLimit;
-    }];
+    _cacheCountLimit = cacheCountLimit;
+    _dbCache.countLimit = cacheCountLimit;
 }
 
 #pragma mark - perform block
+
+- (BOOL)isInReadQueue
+{
+    void *context = dispatch_get_specific(&self->readSpecificKey);
+    BOOL hasContext = context ? YES : NO;
+    
+    return (_type == BLMainQueueDatabaseConnectionType && [NSThread isMainThread]) || hasContext;
+}
+
+- (BOOL)isInWriteQueue
+{
+    void *context = dispatch_get_specific(&self.database->writeSpecificKey);
+    BOOL hasContext = context ? YES : NO;
+    
+    return hasContext;
+}
 
 - (void)performReadBlockAndWait:(void(^)(void))block
 {
@@ -117,18 +142,8 @@
             block();
         }
     };
-    
-    /*
-     dispatch_sync(readQueue, ...) {
-        dispatch_sync(writeQueue, ...) {
-        }
-     }
-     */
 
-    void *context1 = dispatch_get_specific(&self->readSpecificKey);
-    void *context2 = dispatch_get_specific(&self.database->writeSpecificKey);
-    
-    if (context1 || context2) {
+    if ([self isInReadQueue]) {
         newBlock();
     } else {
         dispatch_sync(self->readQueue, newBlock);
@@ -143,16 +158,7 @@
         }
     };
     
-    /*
-     dispatch_sync(readQueue, ...) {
-        dispatch_sync(writeQueue, ...) {
-        }
-     }
-     */
-    void *context1 = dispatch_get_specific(&self->readSpecificKey);
-    void *context2 = dispatch_get_specific(&self.database->writeSpecificKey);
-    
-    if (context1 || context2) {
+    if ([self isInReadQueue]) {
         newBlock();
     } else {
         dispatch_async(self->readQueue, newBlock);
@@ -168,9 +174,7 @@
     };
     
     [self performReadBlockAndWait:^{
-        void *context = dispatch_get_specific(&self.database->writeSpecificKey);
-        
-        if (context) {
+        if ([self isInWriteQueue]) {
             newBlock();
         } else {
             dispatch_sync(self.database->writeQueue, ^{
@@ -189,9 +193,7 @@
     };
     
     [self performReadBlock:^{
-        void *context = dispatch_get_specific(&self.database->writeSpecificKey);
-        
-        if (context) {
+        if ([self isInWriteQueue]) {
             newBlock();
         } else {
             dispatch_sync(self.database->writeQueue, ^{
@@ -201,93 +203,7 @@
     }];
 }
 
-#pragma mark - public
-
-- (void)validateInTransaction
-{
-    BOOL inTransaction = [self.fmdb inTransaction];
-    if (!inTransaction) {
-        BLLogError(@"you must be excute in performBlockAndWaitInTransaction or in performBlockInTransaction");
-        assert(false);
-    }
-}
-
-- (void)touchedObject:(id)object
-{
-    if (object) {
-        [self touchedObjects:@[object]];
-    }
-}
-
-- (void)touchedObjects:(id)objects
-{
-    [self validateInTransaction];
-    for (id object in objects) {
-        [object touchedInDatabaseConnection:self];
-    }
-}
-
-- (void)insertOrUpdateObject:(BLBaseDBObject *)object
-{
-    if (object) {
-        [self insertOrUpdateObjects:@[object]];
-    }
-}
-
-- (void)insertOrUpdateObjects:(NSArray *)objects
-{
-    [self validateInTransaction];
-    for (id object in objects) {
-        [object insertOrUpdateInDatabaseConnection:self];
-    }
-}
-
-- (void)insertObject:(id)object
-{
-    if (object) {
-        [self insertObjects:@[object]];
-    }
-}
-
-- (void)insertObjects:(NSArray *)objects
-{
-    [self validateInTransaction];
-    for (id object in objects) {
-        [object insertInDatabaseConnection:self];
-    }
-}
-
-- (void)updateObject:(BLBaseDBObject *)object
-{
-    if (object) {
-        [self updateObjects:@[object]];
-    }
-}
-
-- (void)updateObjects:(NSArray *)objects
-{
-    [self validateInTransaction];
-    for (id object in objects) {
-        [object updateInDatabaseConnection:self];
-    }
-}
-
-- (void)deleteObject:(id)object
-{
-    if (object) {
-        [self deleteObjects:@[object]];
-    }
-}
-
-- (void)deleteObjects:(NSArray *)objects
-{
-    [self validateInTransaction];
-    for (id object in objects) {
-        [object deleteInDatabaseConnection:self];
-    }
-}
-
-- (void)performBlockAndWaitInTransaction:(void(^)(BOOL *rollback))block;
+- (void)performReadWriteBlockAndWaitInTransaction:(void(^)(BOOL *rollback))block
 {
     [self performReadWriteBlockAndWait:^{
         BOOL shouldRollback = NO;
@@ -311,7 +227,7 @@
     }];
 }
 
-- (void)performBlockInTransaction:(void(^)(BOOL *rollback))block
+- (void)performReadWriteBlockInTransaction:(void(^)(BOOL *rollback))block;
 {
     [self performReadWriteBlock:^{
         BOOL shouldRollback = NO;
@@ -333,6 +249,95 @@
             }
         }
     }];
+}
+
+#pragma mark - public
+
+- (void)validateRead
+{
+    if (![self isInReadQueue] && ![self isInWriteQueue]) {
+        BLLogError(@"you must be excute in read queue");
+        assert(false);
+    }
+}
+
+- (void)validateReadWriteInTransaction
+{
+    BOOL inTransaction = [self.fmdb inTransaction];
+    if (!inTransaction || ![self isInWriteQueue]) {
+        BLLogError(@"you must be excute in write queue and in transaction");
+        assert(false);
+    }
+}
+
+- (void)touchedObject:(id)object
+{
+    if (object) {
+        [self touchedObjects:@[object]];
+    }
+}
+
+- (void)touchedObjects:(id)objects
+{
+    for (id object in objects) {
+        [object touchedInDatabaseConnection:self];
+    }
+}
+
+- (void)insertOrUpdateObject:(BLBaseDBObject *)object
+{
+    if (object) {
+        [self insertOrUpdateObjects:@[object]];
+    }
+}
+
+- (void)insertOrUpdateObjects:(NSArray *)objects
+{
+    for (id object in objects) {
+        [object insertOrUpdateInDatabaseConnection:self];
+    }
+}
+
+- (void)insertObject:(id)object
+{
+    if (object) {
+        [self insertObjects:@[object]];
+    }
+}
+
+- (void)insertObjects:(NSArray *)objects
+{
+    for (id object in objects) {
+        [object insertInDatabaseConnection:self];
+    }
+}
+
+- (void)updateObject:(BLBaseDBObject *)object
+{
+    if (object) {
+        [self updateObjects:@[object]];
+    }
+}
+
+- (void)updateObjects:(NSArray *)objects
+{
+    for (id object in objects) {
+        [object updateInDatabaseConnection:self];
+    }
+}
+
+- (void)deleteObject:(id)object
+{
+    if (object) {
+        [self deleteObjects:@[object]];
+    }
+}
+
+- (void)deleteObjects:(NSArray *)objects
+{
+    for (id object in objects) {
+        [object deleteInDatabaseConnection:self];
+    }
 }
 
 - (void)beginTransaction
@@ -371,6 +376,13 @@
             [self.dbCache removeObjectForKey:[object.objectClass cacheKeyWithValueForObjectID:object.objectID]];
         }
     }];
+}
+
+#pragma mark - BLDBCacheDelegate
+
+- (void)cache:(BLDBCache *)cache willEvictObject:(BLDBCacheItem *)obj
+{
+    
 }
 
 @end

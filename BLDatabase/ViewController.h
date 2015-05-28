@@ -12,6 +12,10 @@
 
 @property (nonatomic, strong) UITableView *tableView;
 
+- (IBAction)insertPressed:(id)sender;
+- (IBAction)updatePressed:(id)sender;
+- (IBAction)deletePressed:(id)sender;
+- (IBAction)findPressed:(id)sender;
 
 @end
 

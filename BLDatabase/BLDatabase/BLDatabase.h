@@ -7,8 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-
-@class BLDatabaseConnection;
+#import "BLDatabaseConnection.h"
 
 typedef void(^BLMigrationBlock)(BLDatabaseConnection *databaseConnection, NSUInteger oldSchemaVersion);
 
@@ -19,6 +18,8 @@ typedef void(^BLMigrationBlock)(BLDatabaseConnection *databaseConnection, NSUInt
 
 + (instancetype)memoryDatabase;
 
++ (instancetype)memoryDatabaseWithUniqueName:(NSString *)uniqueName;
+
 + (instancetype)defaultDatabase;
 
 + (instancetype)databaseWithName:(NSString *)name;
@@ -28,6 +29,9 @@ typedef void(^BLMigrationBlock)(BLDatabaseConnection *databaseConnection, NSUInt
 - (void)setSchemaVersion:(NSUInteger)version
       withMigrationBlock:(BLMigrationBlock)block;
 
+// type is BLPrivateQueueDatabaseConnectionType
 - (BLDatabaseConnection *)newConnection;
+
+- (BLDatabaseConnection *)newConnectionWithType:(BLDatabaseConnectionType)type;
 
 @end

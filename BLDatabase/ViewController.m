@@ -33,35 +33,21 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
     
+    self.edgesForExtendedLayout = UIRectEdgeNone;
+    
     self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"还原" style:UIBarButtonItemStylePlain target:self action:@selector(leftPressed:)];
     
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"动画" style:UIBarButtonItemStylePlain target:self action:@selector(rightPressed:)];
     
-    self.edgesForExtendedLayout = UIRectEdgeNone;
-    
     self.database = [BLDatabase defaultDatabase];
     [self.database setSchemaVersion:1
                  withMigrationBlock:^(BLDatabaseConnection *databaseConnection, NSUInteger oldSchemaVersion) {
-                     if (oldSchemaVersion == 0) {
-                         [BLTestObject createTableAndIndexInDatabaseConnection:databaseConnection];
-                         [BLAccount createTableAndIndexInDatabaseConnection:databaseConnection];
-                     }
+                         [BLTestObject createTableAndIndexIfNeededInDatabaseConnection:databaseConnection];
+                         [BLAccount createTableAndIndexIfNeededInDatabaseConnection:databaseConnection];
                  }];
     
-    self.uiConnection = [self.database newConnection];
-    self.backgroundConnection = [self.database newConnection];
-    
-    [self.uiConnection performBlockAndWaitInTransaction:^(BOOL *rollback) {
-        for (int i = 0; i < 10; i++) {
-            BLAccount *account = [BLAccount new];
-            BLAccount *account1 = [BLAccount new];
-            account.nickname = @"tt";
-            account.relationship = account1;
-            account1.relationship = account;
-            
-            [self.uiConnection insertObjects:@[account, account1]];
-        }
-    }];
+    self.uiConnection = [self.database newConnectionWithType:BLMainQueueDatabaseConnectionType];
+    self.backgroundConnection = [self.database newConnectionWithType:BLPrivateQueueDatabaseConnectionType];
     
     self.backgroundQueue = dispatch_queue_create("com.background.sql", DISPATCH_QUEUE_SERIAL);
     
@@ -81,7 +67,11 @@
     self.fetchedResultsController = controller;
     
     self.tableView = [[UITableView alloc] initWithFrame:self.view.bounds style:UITableViewStylePlain];
+    CGRect frame = self.tableView.frame;
+    frame.origin.y = 44;
+    self.tableView.frame = frame;
     self.tableView.rowHeight = 44;
+    self.tableView.autoresizingMask = UIViewAutoresizingFlexibleHeight;
     self.tableView.dataSource = self;
     self.tableView.delegate = self;
     
@@ -90,41 +80,43 @@
 
 - (void)leftPressed:(id)sender
 {
-    
+    __weak BLDatabaseConnection *connection = self.backgroundConnection;
+    [connection performReadWriteBlockInTransaction:^(BOOL *rollback) {
+        NSArray *result = [BLTestObject findObjectsInDatabaseConnection:connection];
+        [connection deleteObjects:result];
+    }];
 }
 
 - (void)rightPressed:(id)sender
 {
     __weak BLDatabaseConnection *connection = self.backgroundConnection;
-    dispatch_async(self.backgroundQueue, ^{
-        [connection performBlockAndWaitInTransaction:^(BOOL *rollback) {
-            int count = 50;
-            NSArray *result = [BLTestObject findObjectsInDatabaseConnection:connection
-                                                                    orderBy:nil
-                                                                     length:count
-                                                                     offset:0
-                                                                      where:nil];
-            
-            int index = 0;
-                    for (BLTestObject *object in result) {
-                        if (index % 2 == 0) {
-//                            [object setGroupName:[NSString stringWithFormat:@"%c", (arc4random() % 26) + 65]];
-//                            object.name = [NSString stringWithFormat:@"%c", (arc4random() % 26) + 65];
-//                            [connection insertOrUpdateObject:object];
-                        } else {
-                            [connection deleteObject:object];
-                        }
-                        index++;
-                    }
-            
-            for (int i = 0; i < count; i++) {
-                BLTestObject *object = [BLTestObject new];
-                object.groupName = [NSString stringWithFormat:@"%c", (arc4random() % 26) + 65];
-                object.name = [NSString stringWithFormat:@"%c", (arc4random() % 26) + 65];
-                [connection insertObject:object];
+    [connection performReadWriteBlockInTransaction:^(BOOL *rollback) {
+        int count = 50;
+        NSArray *result = [BLTestObject findObjectsInDatabaseConnection:connection
+                                                                orderBy:nil
+                                                                 length:count
+                                                                 offset:0
+                                                                  where:nil];
+        
+        int index = 0;
+        for (BLTestObject *object in result) {
+            if (index % 2 == 0) {
+                //                            [object setGroupName:[NSString stringWithFormat:@"%c", (arc4random() % 26) + 65]];
+                //                            object.name = [NSString stringWithFormat:@"%c", (arc4random() % 26) + 65];
+                //                            [connection insertOrUpdateObject:object];
+            } else {
+                [connection deleteObject:object];
             }
-        }];
-    });
+            index++;
+        }
+        
+        for (int i = 0; i < count; i++) {
+            BLTestObject *object = [BLTestObject new];
+            object.groupName = [NSString stringWithFormat:@"%c", (arc4random() % 26) + 65];
+            object.name = [NSString stringWithFormat:@"%c", (arc4random() % 26) + 65];
+            [connection insertObject:object];
+        }
+    }];
 
     
     return;
@@ -309,4 +301,46 @@
     //[self.tableView reloadData];
 }
 
+- (IBAction)insertPressed:(id)sender
+{
+    __weak BLDatabaseConnection *connection = self.backgroundConnection;
+    [connection performReadWriteBlockInTransaction:^(BOOL *rollback) {
+        int count = 1000;
+        
+        for (int i = 0; i < count; i++) {
+            BLTestObject *object = [BLTestObject new];
+            object.age = 10;
+            object.groupName = [NSString stringWithFormat:@"%c", (arc4random() % 26) + 65];
+            object.name = [NSString stringWithFormat:@"%c", (arc4random() % 26) + 65];
+            [connection insertObject:object];
+        }
+    }];
+}
+
+- (IBAction)updatePressed:(id)sender
+{
+}
+
+- (IBAction)deletePressed:(id)sender
+{
+    __weak BLDatabaseConnection *connection = self.backgroundConnection;
+    [connection performReadWriteBlockInTransaction:^(BOOL *rollback) {
+        NSArray *result = [BLTestObject findObjectsInDatabaseConnection:connection];
+        [connection deleteObjects:result];
+    }];
+}
+
+- (IBAction)findPressed:(id)sender
+{
+    __weak BLDatabaseConnection *connection = self.backgroundConnection;
+    [connection performReadBlockAndWait:^(void) {
+        NSArray *result = [BLTestObject findObjectsInDatabaseConnection:connection];
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:nil
+                                                        message:[NSString stringWithFormat:@"%zd", [result count]]
+                                                       delegate:nil
+                                              cancelButtonTitle:nil
+                                              otherButtonTitles:@"cancel", nil];
+        [alert show];
+    }];
+}
 @end

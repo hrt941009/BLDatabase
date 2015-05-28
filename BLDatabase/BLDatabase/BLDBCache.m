@@ -284,6 +284,7 @@
         }
     }
 
+    /*
     BLDBCacheItem *loopItem = mostRecentCacheItem;
     NSUInteger i = 0;
 
@@ -293,6 +294,7 @@
         loopItem = loopItem->next;
         i++;
     }
+     */
 }
 
 - (NSUInteger)count

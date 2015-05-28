@@ -25,9 +25,16 @@ static NSString * const defaultName = @"default";
 
 + (instancetype)memoryDatabase
 {
-    BLDatabase *database = [[BLDatabase alloc] initWithPath:nil];
+    NSString *path = @"file::memory:?cache=shared";
     
-    return database;
+    return [self databaseWithPath:path];
+}
+
++ (instancetype)memoryDatabaseWithUniqueName:(NSString *)uniqueName
+{
+    NSString *path = [NSString stringWithFormat:@"file:%@?mode=memory&cache=shared", uniqueName];
+    
+    return [self databaseWithPath:path];
 }
 
 + (instancetype)defaultDatabase
@@ -87,7 +94,7 @@ static NSString * const defaultName = @"default";
       withMigrationBlock:(BLMigrationBlock)block
 {
     BLDatabaseConnection *databaseConnection = [self newConnection];
-    [databaseConnection performReadWriteBlockAndWait:^{
+    [databaseConnection performReadWriteBlockAndWaitInTransaction:^(BOOL *rollback) {
         int startingSchemaVersion = 0;
         FMResultSet *rs = [databaseConnection.fmdb executeQuery:@"PRAGMA user_version"];
         if ([rs next]) {
@@ -111,7 +118,12 @@ static NSString * const defaultName = @"default";
 
 - (BLDatabaseConnection *)newConnection
 {
-    BLDatabaseConnection *connection = [[BLDatabaseConnection alloc] initWithDatabase:self];
+    return [self newConnectionWithType:BLPrivateQueueDatabaseConnectionType];
+}
+
+- (BLDatabaseConnection *)newConnectionWithType:(BLDatabaseConnectionType)type
+{
+    BLDatabaseConnection *connection = [[BLDatabaseConnection alloc] initWithDatabase:self withType:type];
     [self.connections addObject:connection];
     
     return connection;

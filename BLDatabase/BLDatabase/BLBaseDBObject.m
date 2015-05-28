@@ -426,7 +426,7 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
 
 - (NSString *)valueForPrimaryKeyFieldName
 {
-    NSString *value = [NSString stringWithFormat:@"%@", [self valueForKey:[[self class] primaryKeyFieldName]]];
+    NSString *value = [self valueForKey:[[self class] primaryKeyFieldName]];
     
     return value;
 }
@@ -869,7 +869,10 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
     
     //BLLogDebug(@"setter %@", seletorName);
     
-    objc_msgSend(self, fieldInfo->oldSetter, value);
+    // 兼容arm64
+    void (*action)(id, SEL, id) = (void (*)(id, SEL, id)) objc_msgSend;
+    action(self, fieldInfo->oldSetter, value);
+    //objc_msgSend(self, fieldInfo->oldSetter, value);
 }
 
 - (void)hookSetterForIntType:(int)value
@@ -884,7 +887,10 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
     
     //BLLogDebug(@"setter %@", seletorName);
     
-    objc_msgSend(self, fieldInfo->oldSetter, value);
+    // 兼容arm64
+    void (*action)(id, SEL, int) = (void (*)(id, SEL, int)) objc_msgSend;
+    action(self, fieldInfo->oldSetter, value);
+    //objc_msgSend(self, fieldInfo->oldSetter, value);
 }
 
 - (void)hookSetterForShortType:(short)value
@@ -899,7 +905,10 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
     
     //BLLogDebug(@"setter %@", seletorName);
     
-    objc_msgSend(self, fieldInfo->oldSetter, value);
+    // 兼容arm64
+    void (*action)(id, SEL, short) = (void (*)(id, SEL, short)) objc_msgSend;
+    action(self, fieldInfo->oldSetter, value);
+    //objc_msgSend(self, fieldInfo->oldSetter, value);
 }
 
 - (void)hookSetterForLongType:(long)value
@@ -914,7 +923,10 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
     
     //BLLogDebug(@"setter %@", seletorName);
     
-    objc_msgSend(self, fieldInfo->oldSetter, value);
+    // 兼容arm64
+    void (*action)(id, SEL, long) = (void (*)(id, SEL, long)) objc_msgSend;
+    action(self, fieldInfo->oldSetter, value);
+    //objc_msgSend(self, fieldInfo->oldSetter, value);
 }
 
 - (void)hookSetterForLongLongType:(long long)value
@@ -929,7 +941,10 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
     
     //BLLogDebug(@"setter %@", seletorName);
     
-    objc_msgSend(self, fieldInfo->oldSetter, value);
+    // 兼容arm64
+    void (*action)(id, SEL, long long) = (void (*)(id, SEL, long long)) objc_msgSend;
+    action(self, fieldInfo->oldSetter, value);
+    //objc_msgSend(self, fieldInfo->oldSetter, value);
 }
 
 - (void)hookSetterForCharType:(char)value
@@ -944,7 +959,10 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
     
     //BLLogDebug(@"setter %@", seletorName);
     
-    objc_msgSend(self, fieldInfo->oldSetter, value);
+    // 兼容arm64
+    void (*action)(id, SEL, char) = (void (*)(id, SEL, char)) objc_msgSend;
+    action(self, fieldInfo->oldSetter, value);
+    //objc_msgSend(self, fieldInfo->oldSetter, value);
 }
 
 - (void)hookSetterForUnsignedCharType:(unsigned char)value
@@ -959,7 +977,10 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
     
     //BLLogDebug(@"setter %@", seletorName);
     
-    objc_msgSend(self, fieldInfo->oldSetter, value);
+    // 兼容arm64
+    void (*action)(id, SEL, unsigned char) = (void (*)(id, SEL, unsigned char)) objc_msgSend;
+    action(self, fieldInfo->oldSetter, value);
+    //objc_msgSend(self, fieldInfo->oldSetter, value);
 }
 
 - (void)hookSetterForUnsignedIntType:(unsigned int)value
@@ -974,7 +995,10 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
     
     //BLLogDebug(@"setter %@", seletorName);
     
-    objc_msgSend(self, fieldInfo->oldSetter, value);
+    // 兼容arm64
+    void (*action)(id, SEL, unsigned int) = (void (*)(id, SEL, unsigned int)) objc_msgSend;
+    action(self, fieldInfo->oldSetter, value);
+    //objc_msgSend(self, fieldInfo->oldSetter, value);
 }
 
 - (void)hookSetterForUnsignedShortType:(unsigned short)value
@@ -989,7 +1013,10 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
     
     //BLLogDebug(@"setter %@", seletorName);
     
-    objc_msgSend(self, fieldInfo->oldSetter, value);
+    // 兼容arm64
+    void (*action)(id, SEL, unsigned short) = (void (*)(id, SEL, unsigned short)) objc_msgSend;
+    action(self, fieldInfo->oldSetter, value);
+    //objc_msgSend(self, fieldInfo->oldSetter, value);
 }
 
 - (void)hookSetterForUnsignedLongType:(unsigned long)value
@@ -1004,7 +1031,10 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
     
     //BLLogDebug(@"setter %@", seletorName);
     
-    objc_msgSend(self, fieldInfo->oldSetter, value);
+    // 兼容arm64
+    void (*action)(id, SEL, unsigned long) = (void (*)(id, SEL, unsigned long)) objc_msgSend;
+    action(self, fieldInfo->oldSetter, value);
+    //objc_msgSend(self, fieldInfo->oldSetter, value);
 }
 
 - (void)hookSetterForUnsignedLongLongType:(unsigned long long)value
@@ -1019,7 +1049,10 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
     
     //BLLogDebug(@"setter %@", seletorName);
     
-    objc_msgSend(self, fieldInfo->oldSetter, value);
+    // 兼容arm64
+    void (*action)(id, SEL, unsigned long long) = (void (*)(id, SEL, unsigned long long)) objc_msgSend;
+    action(self, fieldInfo->oldSetter, value);
+    //objc_msgSend(self, fieldInfo->oldSetter, value);
 }
 
 - (void)hookSetterForFloatType:(float)value
@@ -1034,7 +1067,10 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
     
     //BLLogDebug(@"setter %@", seletorName);
     
-    objc_msgSend(self, fieldInfo->oldSetter, value);
+    // 兼容arm64
+    void (*action)(id, SEL, float) = (void (*)(id, SEL, float)) objc_msgSend;
+    action(self, fieldInfo->oldSetter, value);
+    //objc_msgSend(self, fieldInfo->oldSetter, value);
 }
 
 - (void)hookSetterForDoubleType:(double)value
@@ -1049,7 +1085,10 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
     
     //BLLogDebug(@"setter %@", seletorName);
     
-    objc_msgSend(self, fieldInfo->oldSetter, value);
+    // 兼容arm64
+    void (*action)(id, SEL, double) = (void (*)(id, SEL, double)) objc_msgSend;
+    action(self, fieldInfo->oldSetter, value);
+    //objc_msgSend(self, fieldInfo->oldSetter, value);
 }
 
 - (void)hookSetterForBoolType:(BOOL)value
@@ -1064,7 +1103,10 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
     
     //BLLogDebug(@"setter %@", seletorName);
     
-    objc_msgSend(self, fieldInfo->oldSetter, value);
+    // 兼容arm64
+    void (*action)(id, SEL, BOOL) = (void (*)(id, SEL, BOOL)) objc_msgSend;
+    action(self, fieldInfo->oldSetter, value);
+    //objc_msgSend(self, fieldInfo->oldSetter, value);
 }
 
 #pragma mark - protocol NSCopying
@@ -1240,8 +1282,9 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
 
 #pragma mark -
 
-+ (void)createTableAndIndexInDatabaseConnection:(BLDatabaseConnection *)databaseConnection
++ (void)createTableAndIndexIfNeededInDatabaseConnection:(BLDatabaseConnection *)databaseConnection
 {
+    [databaseConnection validateReadWriteInTransaction];
     NSString *sql = [self createTableSql];
     BLLogDebug(@"sql = %@", sql);
     BOOL success = [databaseConnection.fmdb executeUpdate:sql];
@@ -1292,6 +1335,7 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
 + (void)addColumnNameAndValues:(NSDictionary *)columnNameAndValues
           inDatabaseConnection:(BLDatabaseConnection *)databaseConnection
 {
+    [databaseConnection validateReadWriteInTransaction];
     NSMutableString *sql = [NSMutableString stringWithFormat:@"ALTER TABLE %@\n ADD ", [self tableName]];
     NSString *className = NSStringFromClass([self class]);
     NSDictionary *database_fieldInfo = g_database_fieldInfo[className];
@@ -1328,12 +1372,34 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
 + (void)deleteColumnName:(NSString *)columnName
     inDatabaseConnection:(BLDatabaseConnection *)databaseConnection
 {
+    [self deleteColumnNames:@[columnName] inDatabaseConnection:databaseConnection];
 }
 
 + (void)deleteColumnNames:(NSArray *)columnNames
      inDatabaseConnection:(BLDatabaseConnection *)databaseConnection
 {
+    [databaseConnection validateReadWriteInTransaction];
+    if ([columnNames count] < 1) {
+        return;
+    }
     
+    NSString *className = NSStringFromClass([self class]);
+    NSArray *fieldNames = g_database_fieldInfo[className];
+    NSMutableSet *fieldNamesSet = [NSMutableSet setWithArray:fieldNames];
+    [fieldNamesSet minusSet:[NSSet setWithArray:columnNames]];
+    NSString *linkColumnNames = [[fieldNamesSet allObjects] componentsJoinedByString:@", "];
+    NSString *backupTableName = [NSString stringWithFormat:@"%@_backup", [self tableName]];
+    
+    NSMutableString *sql = [NSMutableString stringWithFormat:@"ALERT TABLE %@ RENAME TO %@;", [self tableName], backupTableName];
+    [sql appendFormat:@"%@;", [self createTableSql]];
+    [sql appendFormat:@"INSERT INTO %@(%@) select %@ from %@;", [self tableName], linkColumnNames, linkColumnNames, backupTableName];
+    [sql appendFormat:@"DROP TABLE %@;", backupTableName];
+    BLLogDebug(@"sql = %@", sql);
+    BOOL success = [databaseConnection.fmdb executeUpdate:sql];
+    if (!success) {
+        BLLogError(@"code = %d, message = %@", [databaseConnection.fmdb lastErrorCode], [databaseConnection.fmdb lastErrorMessage]);
+        assert(false);
+    }
 }
 
 + (void)createIndexWithColumnName:(NSString *)columnName
@@ -1345,6 +1411,7 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
 + (void)createIndexWithColumnNames:(NSArray *)columnNames
               inDatabaseConnection:(BLDatabaseConnection *)databaseConnection
 {
+    [databaseConnection validateReadWriteInTransaction];
     for (NSString *columnName in columnNames) {
         NSString *sql = [NSString stringWithFormat:@"CREATE UNIQUE INDEX IF NOT EXISTS %@ ON %@ (%@)", [self indexNameWithColumnName:columnName], [self tableName], columnName];
         BLLogDebug(@"sql = %@", sql);
@@ -1359,6 +1426,7 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
 + (void)createUnionIndexWithColumnNames:(NSArray *)columnNames
                    inDatabaseConnection:(BLDatabaseConnection *)databaseConnection
 {
+    [databaseConnection validateReadWriteInTransaction];
     NSString *sql = [NSString stringWithFormat:@"CREATE UNIQUE INDEX IF NOT EXISTS %@ ON %@ (%@)", [self indexNameWithColumnNames:columnNames], [self tableName], [columnNames componentsJoinedByString:@","]];
     BLLogDebug(@"sql = %@", sql);
     BOOL success = [databaseConnection.fmdb executeUpdate:sql];
@@ -1377,6 +1445,7 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
 + (void)dropIndexWithColumnNames:(NSArray *)columnNames
             inDatabaseConnection:(BLDatabaseConnection *)databaseConnection
 {
+    [databaseConnection validateReadWriteInTransaction];
     for (NSString *columnName in columnNames) {
         NSString *sql = [NSString stringWithFormat:@"DROP INDEX IF NOT EXISTS %@", [self indexNameWithColumnName:columnName]];
         BLLogDebug(@"sql = %@", sql);
@@ -1391,6 +1460,7 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
 + (void)dropUnionIndexWithColumnNames:(NSArray *)columnNames
                  inDatabaseConnection:(BLDatabaseConnection *)databaseConnection
 {
+    [databaseConnection validateReadWriteInTransaction];
     NSString *sql = [NSString stringWithFormat:@"DROP INDEX IF NOT EXISTS %@", [self indexNameWithColumnNames:columnNames]];
     BLLogDebug(@"sql = %@", sql);
     BOOL success = [databaseConnection.fmdb executeUpdate:sql];
@@ -1424,14 +1494,13 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
                                          where:(NSString *)where
                                         vaList:(va_list)args
 {
-    __block int64_t count = 0;
-    [databaseConnection performReadBlockAndWait:^{
-        FMResultSet *resultSet = [databaseConnection.fmdb executeQuery:[self countQueryWithWhere:where] withVAList:args];
-        if ([resultSet next]) {
-            count = [resultSet longLongIntForColumnIndex:0];
-        }
-        [resultSet close];
-    }];
+    [databaseConnection validateRead];
+    int64_t count = 0;
+    FMResultSet *resultSet = [databaseConnection.fmdb executeQuery:[self countQueryWithWhere:where] withVAList:args];
+    if ([resultSet next]) {
+        count = [resultSet longLongIntForColumnIndex:0];
+    }
+    [resultSet close];
     
     return count;
 }
@@ -1508,7 +1577,7 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
                                     where:(NSString *)where
                                    vaList:(va_list)args
 {
-    NSArray *fieldNames = @[@"rowid", [self objectIDFieldName]];
+    NSArray *fieldNames = nil;
     id object = [self findFirstObjectInDatabaseConnection:databaseConnection
                                                fieldNames:fieldNames
                                                   orderBy:orderBy
@@ -1805,7 +1874,7 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
                                        where:(NSString *)where
                                       vaList:(va_list)args
 {
-    __block NSArray *objects = nil;
+    [databaseConnection validateRead];
     BOOL isFault = NO;
     if ([fieldNames count] < 1) {
         fieldNames = [self databaseFieldNames];
@@ -1829,16 +1898,14 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
     }];
     assert(objectIDIndex != NSNotFound);
     
-    [databaseConnection performReadBlockAndWait:^{
-        NSString *query = [self queryWithFieldNames:fieldNames where:where orderBy:orderBy length:length offset:offset];
-        FMResultSet *resultSet = [databaseConnection.fmdb executeQuery:query withVAList:args];
-        objects = [self objectsWithResultSet:resultSet
-                                  fieldNames:fieldNames
-                               objectIDIndex:objectIDIndex
-                                     isFault:isFault
-                        inDatabaseConnection:databaseConnection];
-        [resultSet close];
-    }];
+    NSString *query = [self queryWithFieldNames:fieldNames where:where orderBy:orderBy length:length offset:offset];
+    FMResultSet *resultSet = [databaseConnection.fmdb executeQuery:query withVAList:args];
+    NSArray *objects = [self objectsWithResultSet:resultSet
+                              fieldNames:fieldNames
+                           objectIDIndex:objectIDIndex
+                                 isFault:isFault
+                    inDatabaseConnection:databaseConnection];
+    [resultSet close];
     
     return objects;
 }
@@ -2059,11 +2126,7 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
                                       length:(u_int64_t)length
                                       offset:(u_int64_t)offset
 {
-    __block NSArray *objects = nil;
-    [databaseConnection performReadBlockAndWait:^{
-        objects = [self findObjectsInDatabaseConnection:databaseConnection fieldNames:fieldNames];
-    }];
-    
+    NSArray *objects = [self findObjectsInDatabaseConnection:databaseConnection fieldNames:fieldNames];
     objects = [objects filteredArrayUsingPredicate:predicate];
     objects = [objects sortedArrayUsingDescriptors:sortDescriptors];
     if (offset > 0 || length > 0) {
@@ -2083,162 +2146,157 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
 
 - (void)touchedInDatabaseConnection:(BLDatabaseConnection *)databaseConnection
 {
-    [databaseConnection performReadWriteBlockAndWait:^{
-        if ([self shouldTouchedInDatabaseConnection:databaseConnection]) {
-            NSError *error = nil;
-            BOOL isExist = [self isExistInDatabaseConnection:databaseConnection];
+    [databaseConnection validateReadWriteInTransaction];
+    if ([self shouldTouchedInDatabaseConnection:databaseConnection]) {
+        NSError *error = nil;
+        BOOL isExist = [self isExistInDatabaseConnection:databaseConnection];
+        
+        if (isExist) {
+            BLDBChangedObject *changedObject = [BLDBChangedObject new];
+            changedObject.objectID = self.objectID;
+            changedObject.objectClass = [self class];
+            changedObject.type = BLDBChangedObjectUpdate;
             
-            if (isExist) {
-                BLDBChangedObject *changedObject = [BLDBChangedObject new];
-                changedObject.objectID = self.objectID;
-                changedObject.objectClass = [self class];
-                changedObject.type = BLDBChangedObjectUpdate;
-                
-                [databaseConnection.changedObjects addObject:changedObject];
-            } else {
-                BLLogWarn(@"object not in database, touched object is invalidate");
-                error = BLDatabaseError(@"object not in database, touched object is invalidate");
-            }
-            
-            if ([self respondsToSelector:@selector(didTouchedInDatabaseConnection:withError:)]) {
-                [self didTouchedInDatabaseConnection:databaseConnection withError:error];
-            }
+            [databaseConnection.changedObjects addObject:changedObject];
+        } else {
+            BLLogWarn(@"object not in database, touched object is invalidate");
+            error = BLDatabaseError(@"object not in database, touched object is invalidate");
         }
-    }];
+        
+        if ([self respondsToSelector:@selector(didTouchedInDatabaseConnection:withError:)]) {
+            [self didTouchedInDatabaseConnection:databaseConnection withError:error];
+        }
+    }
 }
 
 #pragma mark - save/delete
 
 - (void)insertOrUpdateInDatabaseConnection:(BLDatabaseConnection *)databaseConnection
 {
-    [databaseConnection performReadWriteBlockAndWait:^{
-        BOOL isExist = [self isExistInDatabaseConnection:databaseConnection];
-        if (isExist) {
-            [self updateInDatabaseConnection:databaseConnection];
-        } else {
-            [self insertInDatabaseConnection:databaseConnection];
-        }
-    }];
+    [databaseConnection validateReadWriteInTransaction];
+    BOOL isExist = [self isExistInDatabaseConnection:databaseConnection];
+    if (isExist) {
+        [self updateInDatabaseConnection:databaseConnection];
+    } else {
+        [self insertInDatabaseConnection:databaseConnection];
+    }
 }
 
 - (void)insertInDatabaseConnection:(BLDatabaseConnection *)databaseConnection
 {
-    [databaseConnection performReadWriteBlockAndWait:^{
-        if ([self shouldInsertInDatabaseConnection:databaseConnection]) {
-            NSError *error = nil;
-            NSArray *fieldNames = [[self class] databaseFieldNames];
-            NSString *sql = [self insertSqlWithFieldNames:fieldNames];
+    [databaseConnection validateReadWriteInTransaction];
+    if ([self shouldInsertInDatabaseConnection:databaseConnection]) {
+        NSError *error = nil;
+        NSArray *fieldNames = [[self class] databaseFieldNames];
+        NSString *sql = [self insertSqlWithFieldNames:fieldNames];
+        
+        BOOL success = [databaseConnection.fmdb executeUpdate:sql withArgumentsInArray:[self valuesInFieldNames:fieldNames]];
+        if (!success) {
+            BLLogError(@"code = %d, message = %@", databaseConnection.fmdb.lastErrorCode, databaseConnection.fmdb.lastErrorMessage);
+            error = databaseConnection.fmdb.lastError;
+        } else {
+            // 更新db字段
+            self.databaseConnection = databaseConnection;
             
-            BOOL success = [databaseConnection.fmdb executeUpdate:sql withArgumentsInArray:[self valuesInFieldNames:fieldNames]];
-            if (!success) {
-                BLLogError(@"code = %d, message = %@", databaseConnection.fmdb.lastErrorCode, databaseConnection.fmdb.lastErrorMessage);
-                error = databaseConnection.fmdb.lastError;
-            } else {
-                // 更新db字段
-                self.databaseConnection = databaseConnection;
-                
-                // 更新rowid字段
-                self.rowid = databaseConnection.fmdb.lastInsertRowId;
-                
-                BLDBChangedObject *changedObject = [BLDBChangedObject new];
-                changedObject.objectID = self.objectID;
-                changedObject.objectClass = [self class];
-                changedObject.changedFiledNames = nil;
-                changedObject.type = BLDBChangedObjectInsert;
-                [databaseConnection.changedObjects addObject:changedObject];
-            }
+            // 更新rowid字段
+            self.rowid = databaseConnection.fmdb.lastInsertRowId;
             
-            if ([self respondsToSelector:@selector(didInsertInDatabaseConnection:withError:)]) {
-                [self didInsertInDatabaseConnection:databaseConnection withError:error];
-            }
+            BLDBChangedObject *changedObject = [BLDBChangedObject new];
+            changedObject.objectID = self.objectID;
+            changedObject.objectClass = [self class];
+            changedObject.changedFiledNames = nil;
+            changedObject.type = BLDBChangedObjectInsert;
+            [databaseConnection.changedObjects addObject:changedObject];
         }
-    }];
+        
+        if ([self respondsToSelector:@selector(didInsertInDatabaseConnection:withError:)]) {
+            [self didInsertInDatabaseConnection:databaseConnection withError:error];
+        }
+    }
 }
 
 - (void)updateInDatabaseConnection:(BLDatabaseConnection *)databaseConnection
 {
-    [databaseConnection performReadWriteBlockAndWait:^{
-        if ([self shouldUpdateInDatabaseConnection:databaseConnection]) {
-            NSError *error = nil;
-            NSString *sql = nil;
-            NSMutableSet *allSet = [NSMutableSet setWithArray:[[self class] databaseFieldNames]];
-            [allSet intersectSet:self.changedFieldNames];
-            NSArray *fieldNames = [allSet allObjects];
-            
-            if ([fieldNames count] >= 1) {
-                sql = [self updateSqlWithFieldNames:fieldNames];
-            } else {
-                BLLogWarn(@"object has no changes, should not update");
-                error = BLDatabaseError(@"object has no changes, should not update");
-            }
-            
-            if (sql) {
-                NSString *valueForObjectID = [self valueForObjectID];
-                BOOL success = [databaseConnection.fmdb executeUpdate:sql withArgumentsInArray:[self valuesInFieldNames:fieldNames]];
-                if (!success) {
-                    BLLogError(@"code = %d, message = %@", databaseConnection.fmdb.lastErrorCode, databaseConnection.fmdb.lastErrorMessage);
-                    error = databaseConnection.fmdb.lastError;
-                    id object = [[self class] objectWithValueForObjectID:valueForObjectID inCachedObjects:databaseConnection.cachedObjects];
-                    
-                    if (self == object) {
-                        // 移除内存缓存
-                        [[self class] removeObject:self withValueForObjectID:valueForObjectID inCachedObjects:databaseConnection.cachedObjects];
-                    }
-                } else {
-                    // 更新db字段
-                    self.databaseConnection = databaseConnection;
-                    
-                    // 清空改变的properties
-                    [self.changedFieldNames removeAllObjects];
-                    
-                    BLDBChangedObject *changedObject = [BLDBChangedObject new];
-                    changedObject.objectID = self.objectID;
-                    changedObject.objectClass = [self class];
-                    changedObject.changedFiledNames = fieldNames;
-                    changedObject.type = BLDBChangedObjectUpdate;
-                    
-                    [databaseConnection.changedObjects addObject:changedObject];
-                }
-            }
-            
-            if ([self respondsToSelector:@selector(didUpdateInDatabaseConnection:withError:)]) {
-                [self didUpdateInDatabaseConnection:databaseConnection withError:error];
-            }
+    [databaseConnection validateReadWriteInTransaction];
+    if ([self shouldUpdateInDatabaseConnection:databaseConnection]) {
+        NSError *error = nil;
+        NSString *sql = nil;
+        NSMutableSet *allSet = [NSMutableSet setWithArray:[[self class] databaseFieldNames]];
+        [allSet intersectSet:self.changedFieldNames];
+        NSArray *fieldNames = [allSet allObjects];
+        
+        if ([fieldNames count] >= 1) {
+            sql = [self updateSqlWithFieldNames:fieldNames];
+        } else {
+            BLLogWarn(@"object has no changes, should not update");
+            error = BLDatabaseError(@"object has no changes, should not update");
         }
-    }];
-}
-
-- (void)deleteInDatabaseConnection:(BLDatabaseConnection *)databaseConnection
-{
-    [databaseConnection performReadBlockAndWait:^{
-        if ([self shouldDeleteInDatabaseConnection:databaseConnection]) {
-            NSError *error = nil;
-            NSString *sql = [self deleteSql];
-            BOOL success = [databaseConnection.fmdb executeUpdate:sql];
+        
+        if (sql) {
+            NSString *valueForObjectID = [self valueForObjectID];
+            BOOL success = [databaseConnection.fmdb executeUpdate:sql withArgumentsInArray:[self valuesInFieldNames:fieldNames]];
             if (!success) {
-                BLLogError(@"code = %d, messaeg = %@", databaseConnection.fmdb.lastErrorCode, databaseConnection.fmdb.lastErrorMessage);
+                BLLogError(@"code = %d, message = %@", databaseConnection.fmdb.lastErrorCode, databaseConnection.fmdb.lastErrorMessage);
                 error = databaseConnection.fmdb.lastError;
+                id object = [[self class] objectWithValueForObjectID:valueForObjectID inCachedObjects:databaseConnection.cachedObjects];
+                
+                if (self == object) {
+                    // 移除内存缓存
+                    [[self class] removeObject:self withValueForObjectID:valueForObjectID inCachedObjects:databaseConnection.cachedObjects];
+                }
             } else {
                 // 更新db字段
                 self.databaseConnection = databaseConnection;
-                self.rowid = 0;
                 
-                [[self class] removeObject:self withValueForObjectID:[self valueForObjectID] inCachedObjects:databaseConnection.cachedObjects];
+                // 清空改变的properties
+                [self.changedFieldNames removeAllObjects];
                 
                 BLDBChangedObject *changedObject = [BLDBChangedObject new];
                 changedObject.objectID = self.objectID;
                 changedObject.objectClass = [self class];
-                changedObject.changedFiledNames = nil;
-                changedObject.type = BLDBChangedObjectDelete;
+                changedObject.changedFiledNames = fieldNames;
+                changedObject.type = BLDBChangedObjectUpdate;
                 
                 [databaseConnection.changedObjects addObject:changedObject];
             }
-            
-            if ([self respondsToSelector:@selector(didDeleteInDatabaseConnection:withError:)]) {
-                [self didDeleteInDatabaseConnection:databaseConnection withError:error];
-            }
         }
-    }];
+        
+        if ([self respondsToSelector:@selector(didUpdateInDatabaseConnection:withError:)]) {
+            [self didUpdateInDatabaseConnection:databaseConnection withError:error];
+        }
+    }
+}
+
+- (void)deleteInDatabaseConnection:(BLDatabaseConnection *)databaseConnection
+{
+    [databaseConnection validateReadWriteInTransaction];
+    if ([self shouldDeleteInDatabaseConnection:databaseConnection]) {
+        NSError *error = nil;
+        NSString *sql = [self deleteSql];
+        BOOL success = [databaseConnection.fmdb executeUpdate:sql];
+        if (!success) {
+            BLLogError(@"code = %d, messaeg = %@", databaseConnection.fmdb.lastErrorCode, databaseConnection.fmdb.lastErrorMessage);
+            error = databaseConnection.fmdb.lastError;
+        } else {
+            // 更新db字段
+            self.databaseConnection = databaseConnection;
+            self.rowid = 0;
+            
+            [[self class] removeObject:self withValueForObjectID:[self valueForObjectID] inCachedObjects:databaseConnection.cachedObjects];
+            
+            BLDBChangedObject *changedObject = [BLDBChangedObject new];
+            changedObject.objectID = self.objectID;
+            changedObject.objectClass = [self class];
+            changedObject.changedFiledNames = nil;
+            changedObject.type = BLDBChangedObjectDelete;
+            
+            [databaseConnection.changedObjects addObject:changedObject];
+        }
+        
+        if ([self respondsToSelector:@selector(didDeleteInDatabaseConnection:withError:)]) {
+            [self didDeleteInDatabaseConnection:databaseConnection withError:error];
+        }
+    }
 }
 
 #pragma mark - begin end notification
@@ -2445,63 +2503,62 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
 
 - (void)loadFaultInDatabaseConnection:(BLDatabaseConnection *)databaseConnection
 {
-    [databaseConnection performReadBlockAndWait:^{
-        if (self.isFault) {
-            NSMutableSet *databaseFieldNames = [NSMutableSet setWithArray:[[self class] databaseFieldNames]];
-            [databaseFieldNames minusSet:[self preloadFieldNames]];
-            
-            NSArray *fieldNames = [databaseFieldNames allObjects];
-            NSString *objectIDFieldName = [[self class] objectIDFieldName];
-            
-            int *fieldTypes = (int *)malloc([fieldNames count] * sizeof(int));
-            if (!self->fieldInfoForDatabase) {
-                NSString *className = NSStringFromClass([self class]);
-                self->fieldInfoForDatabase = g_database_fieldInfo[className];
-            }
-            [fieldNames enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-                BLBaseDBObjectFieldInfo *info = self->fieldInfoForDatabase[obj];
-                fieldTypes[idx] = info.type;
-            }];
-            
-            NSString *sql = [[self class] queryWithFieldNames:fieldNames
-                                                        where:[NSString stringWithFormat:@"%@ = '%@'", objectIDFieldName, [self valueForObjectID]]
-                                                      orderBy:nil
-                                                       length:1
-                                                       offset:0];
-            FMResultSet *resultSet = [databaseConnection.fmdb executeQuery:sql];
-            
-            if ([resultSet next]) {
-                self.enableFullLoadIfFault = NO;
-                sqlite3_stmt *statement = [[resultSet statement] statement];
-                NSUInteger num_cols = (NSUInteger)sqlite3_data_count(statement);
-                if (num_cols > 0) {
-                    int columnCount = sqlite3_column_count(statement);
-                    int columnIdx = 0;
-                    for (columnIdx = 0; columnIdx < columnCount; columnIdx++) {
-                        NSString *columnName = fieldNames[columnIdx];
-                        id objectValue = [resultSet objectForColumnIndex:columnIdx];
-                        if ([objectValue isEqual:[NSNull null]]) {
-                            objectValue = nil;
-                        }
-                        if (objectValue) {
-                            BLBaseDBObjectFieldType fieldType = fieldTypes[columnIdx];
-                            if (fieldType == BLBaseDBObjectFieldTypeDate) {
-                                objectValue = [NSDate dateWithTimeIntervalSince1970:[objectValue doubleValue]];
-                            } else if (fieldType == BLBaseDBObjectFieldTypeArray) {
-                                objectValue = [objectValue componentsSeparatedByString:@","];
-                            }
-                        }
-                        
-                        [self setValue:objectValue forKey:columnName];
-                    }
-                }
-                self.enableFullLoadIfFault = YES;
-            }
-            self.isFault = NO;
-            
-            [resultSet close];
+    [databaseConnection validateRead];
+    if (self.isFault) {
+        NSMutableSet *databaseFieldNames = [NSMutableSet setWithArray:[[self class] databaseFieldNames]];
+        [databaseFieldNames minusSet:[self preloadFieldNames]];
+        
+        NSArray *fieldNames = [databaseFieldNames allObjects];
+        NSString *objectIDFieldName = [[self class] objectIDFieldName];
+        
+        int *fieldTypes = (int *)malloc([fieldNames count] * sizeof(int));
+        if (!self->fieldInfoForDatabase) {
+            NSString *className = NSStringFromClass([self class]);
+            self->fieldInfoForDatabase = g_database_fieldInfo[className];
         }
-    }];
+        [fieldNames enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+            BLBaseDBObjectFieldInfo *info = self->fieldInfoForDatabase[obj];
+            fieldTypes[idx] = info.type;
+        }];
+        
+        NSString *sql = [[self class] queryWithFieldNames:fieldNames
+                                                    where:[NSString stringWithFormat:@"%@ = '%@'", objectIDFieldName, [self valueForObjectID]]
+                                                  orderBy:nil
+                                                   length:1
+                                                   offset:0];
+        FMResultSet *resultSet = [databaseConnection.fmdb executeQuery:sql];
+        
+        if ([resultSet next]) {
+            self.enableFullLoadIfFault = NO;
+            sqlite3_stmt *statement = [[resultSet statement] statement];
+            NSUInteger num_cols = (NSUInteger)sqlite3_data_count(statement);
+            if (num_cols > 0) {
+                int columnCount = sqlite3_column_count(statement);
+                int columnIdx = 0;
+                for (columnIdx = 0; columnIdx < columnCount; columnIdx++) {
+                    NSString *columnName = fieldNames[columnIdx];
+                    id objectValue = [resultSet objectForColumnIndex:columnIdx];
+                    if ([objectValue isEqual:[NSNull null]]) {
+                        objectValue = nil;
+                    }
+                    if (objectValue) {
+                        BLBaseDBObjectFieldType fieldType = fieldTypes[columnIdx];
+                        if (fieldType == BLBaseDBObjectFieldTypeDate) {
+                            objectValue = [NSDate dateWithTimeIntervalSince1970:[objectValue doubleValue]];
+                        } else if (fieldType == BLBaseDBObjectFieldTypeArray) {
+                            objectValue = [objectValue componentsSeparatedByString:@","];
+                        }
+                    }
+                    
+                    [self setValue:objectValue forKey:columnName];
+                }
+            }
+            self.enableFullLoadIfFault = YES;
+        }
+        self.isFault = NO;
+        
+        [resultSet close];
+    }
 }
 
 #pragma mark - cache
@@ -2555,6 +2612,7 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
 
 + (NSString *)cacheKeyWithValueForObjectID:(NSString *)valueForObjectID
 {
+    return valueForObjectID;
     char *buffer;
     asprintf(&buffer, "%s-%s", [[self tableName] UTF8String], [valueForObjectID UTF8String]);
     NSString *value = [NSString stringWithCString:buffer encoding:NSUTF8StringEncoding];

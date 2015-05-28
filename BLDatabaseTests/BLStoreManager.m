@@ -29,11 +29,11 @@ static BLStoreManager *shareInstance = nil;
     self = [super init];
     if (self) {
         _mDatabase = [BLDatabase memoryDatabase];
-        _mConnection = [_mDatabase newConnection];
+        _mConnection = [_mDatabase newConnectionWithType:BLMainQueueDatabaseConnectionType];
         
         _database = [BLDatabase defaultDatabase];
-        _connection = [_database newConnection];
-        _connection1 = [_database newConnection];
+        _uiConnection = [_database newConnectionWithType:BLMainQueueDatabaseConnectionType];
+        _backgroundConnection = [_database newConnectionWithType:BLPrivateQueueDatabaseConnectionType];
     }
     
     return self;

@@ -16,8 +16,8 @@
 @property (nonatomic, strong) BLDatabaseConnection *mConnection;
 
 @property (nonatomic, strong) BLDatabase *database;
-@property (nonatomic, strong) BLDatabaseConnection *connection;
-@property (nonatomic, strong) BLDatabaseConnection *connection1;
+@property (nonatomic, strong) BLDatabaseConnection *uiConnection;
+@property (nonatomic, strong) BLDatabaseConnection *backgroundConnection;
 
 + (id)shareInstance;
 

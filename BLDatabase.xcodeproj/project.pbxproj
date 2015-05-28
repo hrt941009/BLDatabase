@@ -31,6 +31,7 @@
 		C3EE87771B0C8577001EBCDE /* FMDatabase+Hook.m in Sources */ = {isa = PBXBuildFile; fileRef = C3EE875F1B0C8577001EBCDE /* FMDatabase+Hook.m */; };
 		C3EE87781B0C8577001EBCDE /* FMDatabase+Private.m in Sources */ = {isa = PBXBuildFile; fileRef = C3EE87611B0C8577001EBCDE /* FMDatabase+Private.m */; };
 		C3EE87791B0C8577001EBCDE /* FMDatabase+Private.m in Sources */ = {isa = PBXBuildFile; fileRef = C3EE87611B0C8577001EBCDE /* FMDatabase+Private.m */; };
+		C3EE877B1B0DACD6001EBCDE /* BLMemoryDatabaseTest.m in Sources */ = {isa = PBXBuildFile; fileRef = C3EE877A1B0DACD6001EBCDE /* BLMemoryDatabaseTest.m */; };
 		C3FD03921B0ADE7C0049B42E /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = C3FD03911B0ADE7C0049B42E /* main.m */; };
 		C3FD03951B0ADE7C0049B42E /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = C3FD03941B0ADE7C0049B42E /* AppDelegate.m */; };
 		C3FD03981B0ADE7C0049B42E /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C3FD03971B0ADE7C0049B42E /* ViewController.m */; };
@@ -62,7 +63,6 @@
 		C3FD041C1B0AE0960049B42E /* libsqlite3.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = C3FD041A1B0AE0350049B42E /* libsqlite3.0.dylib */; };
 		C3FD041E1B0AE4E70049B42E /* BLDiskDatabaseTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C3FD041D1B0AE4E70049B42E /* BLDiskDatabaseTests.m */; };
 		C3FD04211B0AE5E70049B42E /* BLStoreManager.m in Sources */ = {isa = PBXBuildFile; fileRef = C3FD04201B0AE5E70049B42E /* BLStoreManager.m */; };
-		C3FD04231B0C6A760049B42E /* BLRelationshipTest.m in Sources */ = {isa = PBXBuildFile; fileRef = C3FD04221B0C6A760049B42E /* BLRelationshipTest.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -105,6 +105,7 @@
 		C3EE875F1B0C8577001EBCDE /* FMDatabase+Hook.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "FMDatabase+Hook.m"; sourceTree = "<group>"; };
 		C3EE87601B0C8577001EBCDE /* FMDatabase+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "FMDatabase+Private.h"; sourceTree = "<group>"; };
 		C3EE87611B0C8577001EBCDE /* FMDatabase+Private.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "FMDatabase+Private.m"; sourceTree = "<group>"; };
+		C3EE877A1B0DACD6001EBCDE /* BLMemoryDatabaseTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BLMemoryDatabaseTest.m; sourceTree = "<group>"; };
 		C3FD038C1B0ADE7C0049B42E /* BLDatabase.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BLDatabase.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C3FD03901B0ADE7C0049B42E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		C3FD03911B0ADE7C0049B42E /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
@@ -144,7 +145,6 @@
 		C3FD041D1B0AE4E70049B42E /* BLDiskDatabaseTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BLDiskDatabaseTests.m; sourceTree = "<group>"; };
 		C3FD041F1B0AE5E70049B42E /* BLStoreManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BLStoreManager.h; sourceTree = "<group>"; };
 		C3FD04201B0AE5E70049B42E /* BLStoreManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BLStoreManager.m; sourceTree = "<group>"; };
-		C3FD04221B0C6A760049B42E /* BLRelationshipTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BLRelationshipTest.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -260,7 +260,7 @@
 				C3FD041F1B0AE5E70049B42E /* BLStoreManager.h */,
 				C3FD04201B0AE5E70049B42E /* BLStoreManager.m */,
 				C3FD041D1B0AE4E70049B42E /* BLDiskDatabaseTests.m */,
-				C3FD04221B0C6A760049B42E /* BLRelationshipTest.m */,
+				C3EE877A1B0DACD6001EBCDE /* BLMemoryDatabaseTest.m */,
 			);
 			path = BLDatabaseTests;
 			sourceTree = "<group>";
@@ -462,8 +462,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C3EE877B1B0DACD6001EBCDE /* BLMemoryDatabaseTest.m in Sources */,
 				C3FD041E1B0AE4E70049B42E /* BLDiskDatabaseTests.m in Sources */,
-				C3FD04231B0C6A760049B42E /* BLRelationshipTest.m in Sources */,
 				C3FD040D1B0ADFA00049B42E /* FMDatabasePool.m in Sources */,
 				C3EE876F1B0C8577001EBCDE /* BLDBChangedObject.m in Sources */,
 				C3EE87771B0C8577001EBCDE /* FMDatabase+Hook.m in Sources */,

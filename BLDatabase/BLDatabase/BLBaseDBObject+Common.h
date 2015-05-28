@@ -10,7 +10,7 @@
 
 @interface BLBaseDBObject (Common)
 
-+ (void)createTableAndIndexInDatabaseConnection:(BLDatabaseConnection *)databaseConnection;
++ (void)createTableAndIndexIfNeededInDatabaseConnection:(BLDatabaseConnection *)databaseConnection;
 
 + (void)addColumnName:(NSString *)columnName
  inDatabaseConnection:(BLDatabaseConnection *)databaseConnection;
