@@ -365,7 +365,7 @@
                    deleteObjects:(NSArray *)deleteObjects
 {
     // 因为已经在write thread，所以此处只需调用到read thread
-    [self performReadBlockAndWait:^{
+    [self performReadBlock:^{
         for (BLDBChangedObject *object in insertObjects) {
             [self.dbCache removeObjectForKey:[object.objectClass cacheKeyWithValueForObjectID:object.objectID]];
         }

@@ -1900,11 +1900,14 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
     
     NSString *query = [self queryWithFieldNames:fieldNames where:where orderBy:orderBy length:length offset:offset];
     FMResultSet *resultSet = [databaseConnection.fmdb executeQuery:query withVAList:args];
+    NSString *className = NSStringFromClass([self class]);
+    NSDictionary *fieldInfo = g_database_fieldInfo[className];
     NSArray *objects = [self objectsWithResultSet:resultSet
-                              fieldNames:fieldNames
-                           objectIDIndex:objectIDIndex
-                                 isFault:isFault
-                    inDatabaseConnection:databaseConnection];
+                                       fieldNames:fieldNames
+                                    objectIDIndex:objectIDIndex
+                                          isFault:isFault
+                                        fieldInfo:fieldInfo
+                             inDatabaseConnection:databaseConnection];
     [resultSet close];
     
     return objects;
@@ -2585,7 +2588,6 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
 + (void)setObject:(id)object withValueForObjectID:(NSString *)value inCachedObjects:(BLDBCache *)cachedObjects
 {
     if ([self isValidObject:object]) {
-        NSString *value = [object valueForObjectID];
         if (value) {
             NSString *key = [self cacheKeyWithValueForObjectID:value];
             [cachedObjects setObject:object forKey:key];
@@ -2613,12 +2615,14 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
 + (NSString *)cacheKeyWithValueForObjectID:(NSString *)valueForObjectID
 {
     return valueForObjectID;
+    /*
     char *buffer;
     asprintf(&buffer, "%s-%s", [[self tableName] UTF8String], [valueForObjectID UTF8String]);
     NSString *value = [NSString stringWithCString:buffer encoding:NSUTF8StringEncoding];
     free(buffer);
     
     return value;
+     */
 }
 
 #pragma mark - check
@@ -2878,12 +2882,13 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
                        fieldNames:(NSArray *)fieldNames
                     objectIDIndex:(NSInteger)objectIDIndex
                           isFault:(BOOL)isFault
+                        fieldInfo:(NSDictionary *)fieldInfo
              inDatabaseConnection:(BLDatabaseConnection *)databaseConnection
 {
     NSMutableArray *objects = [NSMutableArray array];
     int *fieldTypes = (int *)malloc([fieldNames count] * sizeof(int));
-    NSString *className = NSStringFromClass([self class]);
-    NSDictionary *fieldInfo = g_database_fieldInfo[className];
+    //NSString *className = NSStringFromClass([self class]);
+    //NSDictionary *fieldInfo = g_database_fieldInfo[className];
     [fieldNames enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
         BLBaseDBObjectFieldInfo *info = fieldInfo[obj];
         fieldTypes[idx] = info.type;
@@ -2943,6 +2948,8 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
         
         [objects addObject:object];
     }
+    
+    free(fieldTypes);
     
     return objects;
 }
