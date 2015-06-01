@@ -89,6 +89,39 @@
 
 - (void)rightPressed:(id)sender
 {
+    NSMutableArray *result = [NSMutableArray array];
+    NSString *string = nil;
+    for (int i = 0; i < 10000; i++) {
+        NSString *temp = [[NSUUID UUID] UUIDString];
+        if (i == 9999) {
+            string = temp;
+        }
+        [result addObject:temp];
+    }
+    
+    NSLog(@"---begin");
+    [result enumerateObjectsWithOptions:NSEnumerationConcurrent usingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        if ([obj isEqualToString:string]) {
+            NSLog(@"equal");
+        }
+    }];
+    NSLog(@"---end");
+    
+    NSLog(@"---begin");
+    NSPredicate *predExists = [NSPredicate predicateWithFormat:
+                               @"SELF = %@", string];
+    NSUInteger index = [result indexOfObjectPassingTest:
+                        ^(id obj, NSUInteger idx, BOOL *stop) {
+                            return [predExists evaluateWithObject:obj];
+                        }];
+    NSLog(@"---end");
+    
+    NSLog(@"---begin");
+    for (int i = 0; i < 1000; i++) {
+        [result removeObjectAtIndex:100];
+    }
+    NSLog(@"---end");
+    
     __weak BLDatabaseConnection *connection = self.backgroundConnection;
     [connection performReadWriteBlockInTransaction:^(BOOL *rollback) {
         int count = 50;

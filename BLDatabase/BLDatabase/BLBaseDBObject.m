@@ -433,14 +433,14 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
 
 - (NSString *)valueForObjectID
 {
-    NSString *value = [self valueForKey:[[self class] objectIDFieldName]];
+    NSString *value = [self objectID];
     
     return value;
 }
 
 - (int64_t)valueForRowid
 {
-    return [[self valueForKey:[[self class] rowidFieldName]] longLongValue];
+    return [self rowid];
 }
 
 - (NSString *)detailDescription

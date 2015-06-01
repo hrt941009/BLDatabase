@@ -81,8 +81,8 @@ dispatch_async(dispatch_get_main_queue(), block); \
                          objectClass:(Class)objectClass
                 inDatabaseConnection:(BLDatabaseConnection *)databaseConnection
 {
-    if (![objectClass isSubclassOfClass:[BLBaseDBObject class]] || !databaseConnection) {
-        BLLogError(@"objectClass must be subclass of BLBaseDBObject, database must not be nil");
+    if (![objectClass isSubclassOfClass:[BLBaseDBObject class]] || !databaseConnection || databaseConnection.type != BLMainQueueDatabaseConnectionType) {
+        BLLogError(@"objectClass must be subclass of BLBaseDBObject, database must not be nil and mainQueue");
         assert(false);
         return nil;
     }
@@ -576,7 +576,6 @@ dispatch_async(dispatch_get_main_queue(), block); \
     
     if (self.delegate && ([insertSections count] > 0 || [deleteSections count] > 0 || [insertIndexPaths count] > 0 ||
                           [reloadIndexPaths count] > 0 || [deleteIndexPaths count] > 0)) {
-        NSLog(@"-----is Main %d", [NSThread isMainThread]);
         async_block_mainThread(^{
             //BLLogInfo(@"insert sections = %@", insertSections);
             //BLLogInfo(@"delete sections = %@", deleteSections);
@@ -616,13 +615,14 @@ dispatch_async(dispatch_get_main_queue(), block); \
             if ([[self.objectClass tableName] isEqualToString:[[changedObject objectClass] tableName]]) {
                 id object = [changedObject.objectClass findFirstObjectInDatabaseConnection:self.databaseConnection
                                                                           valueForObjectID:changedObject.objectID];
-                assert(object != nil);
+                if (!object) {
+                    continue;
+                }
+                
                 if ([[self class] evaluateObject:object request:self.request]) {
                     NSIndexPath *indexPath = self.indexPathMapping[changedObject.objectID];
                     if (!indexPath) {
                         [insertObjects addObject:object];
-                    } else {
-                        BLLogWarn(@"object should insert, but has existed in fetchedResultsController");
                     }
                 }
             }
@@ -636,33 +636,31 @@ dispatch_async(dispatch_get_main_queue(), block); \
                     id object = [self.objectClass new];
                     [object setObjectID:changedObject.objectID];
                     [deleteObjects addObject:object];
-                } else {
-                    BLLogWarn(@"object should delete, but not exist in fetchedResultsController");
                 }
             }
         }
         
         NSMutableArray *updateObjects = [NSMutableArray array];
         for (BLDBChangedObject *changedObject in [notification.userInfo objectForKey:BLDatabaseUpdateKey]) {
-            NSIndexPath *indexPath = self.indexPathMapping[changedObject.objectID];
-            BOOL valid = [[self.objectClass tableName] isEqualToString:[[changedObject objectClass] tableName]];
-            id object = nil;
-            if (valid) {
-                object = [changedObject.objectClass findFirstObjectInDatabaseConnection:self.databaseConnection
-                                                                       valueForObjectID:changedObject.objectID];
-                assert(object != nil);
-                valid = [[self class] evaluateObject:object request:self.request];
-            } else {
-                object = [self.objectClass new];
-                [object setObjectID:changedObject.objectID];
-            }
-            
-            if (indexPath && valid) {
-                [updateObjects addObject:object];
-            } else if (indexPath && !valid) {
-                [deleteObjects addObject:object];
-            } else if (!indexPath && valid) {
-                [insertObjects addObject:object];
+            if ([[self.objectClass tableName] isEqualToString:[[changedObject objectClass] tableName]]) {
+                NSIndexPath *indexPath = self.indexPathMapping[changedObject.objectID];
+                id object = [changedObject.objectClass findFirstObjectInDatabaseConnection:self.databaseConnection
+                                                                           valueForObjectID:changedObject.objectID];
+                BOOL valid = NO;
+                if (object) {
+                    valid = [[self class] evaluateObject:object request:self.request];
+                } else {
+                    object = [self.objectClass new];
+                    [object setObjectID:changedObject.objectID];
+                }
+                
+                if (indexPath && valid) {
+                    [updateObjects addObject:object];
+                } else if (indexPath && !valid) {
+                    [deleteObjects addObject:object];
+                } else if (!indexPath && valid) {
+                    [insertObjects addObject:object];
+                }
             }
         }
         
