@@ -28,21 +28,23 @@
     BLDatabase *database = [[BLStoreManager shareInstance] database];
     BLDatabaseConnection *connection = [[BLStoreManager shareInstance] uiConnection];
     
-    [database setSchemaVersion:1 withMigrationBlock:^(BLDatabaseConnection *databaseConnection, NSUInteger oldSchemaVersion) {
-        [BLTestObject createTableAndIndexIfNeededInDatabaseConnection:databaseConnection];
-        [BLAccount createTableAndIndexIfNeededInDatabaseConnection:databaseConnection];
+    [database setSchemaVersion:1 withMigrationBlock:^(BLDatabaseConnection *connection, NSUInteger oldSchemaVersion) {
+        [BLTestObject createTableAndIndexIfNeededInConnection:connection];
+        [BLAccount createTableAndIndexIfNeededInConnection:connection];
     }];
     
     [connection performReadWriteBlockAndWaitInTransaction:^(BOOL *rollback) {
-        NSArray *result = [BLTestObject findObjectsInDatabaseConnection:connection];
+        NSArray *result = [BLTestObject findObjectsInConnection:connection];
         [connection deleteObjects:result];
         
-        result = [BLTestObject findObjectsInDatabaseConnection:connection];
+        result = [BLTestObject findObjectsInConnection:connection];
         XCTAssert([result count] == 0);
     }];
     
-    NSArray *result = [BLTestObject findObjectsInDatabaseConnection:connection];
-    XCTAssert([result count] == 0);
+    [connection performReadBlockAndWait:^{
+        NSArray *result = [BLTestObject findObjectsInConnection:connection];
+        XCTAssert([result count] == 0);
+    }];
 }
 
 - (void)tearDown {
@@ -52,15 +54,17 @@
     BLDatabaseConnection *connection = [[BLStoreManager shareInstance] uiConnection];
     
     [connection performReadWriteBlockAndWaitInTransaction:^(BOOL *rollback) {
-        NSArray *result = [BLTestObject findObjectsInDatabaseConnection:connection];
+        NSArray *result = [BLTestObject findObjectsInConnection:connection];
         [connection deleteObjects:result];
         
-        result = [BLTestObject findObjectsInDatabaseConnection:connection];
+        result = [BLTestObject findObjectsInConnection:connection];
         XCTAssert([result count] == 0);
     }];
     
-    NSArray *result = [BLTestObject findObjectsInDatabaseConnection:connection];
-    XCTAssert([result count] == 0);
+    [connection performReadBlockAndWait:^{
+        NSArray *result = [BLTestObject findObjectsInConnection:connection];
+        XCTAssert([result count] == 0);
+    }];
 }
 
 - (void)testInsert {
@@ -74,12 +78,14 @@
             [connection insertObject:object];
         }
         
-        NSArray *result = [BLTestObject findObjectsInDatabaseConnection:connection];
+        NSArray *result = [BLTestObject findObjectsInConnection:connection];
         XCTAssert([result count] == count);
     }];
     
-    NSArray *result = [BLTestObject findObjectsInDatabaseConnection:connection];
-    XCTAssert([result count] == count);
+    [connection performReadBlockAndWait:^{
+        NSArray *result = [BLTestObject findObjectsInConnection:connection];
+        XCTAssert([result count] == count);
+    }];
 }
 
 - (void)testFindWithSql {
@@ -94,18 +100,18 @@
             [connection insertObject:object];
         }
         
-        NSArray *result1 = [BLTestObject findObjectsInDatabaseConnection:connection];
-        NSArray *result2 = [BLTestObject findObjectsInDatabaseConnection:connection where:@"age = ? AND name = ?", @(20), @"alibaba"];
+        NSArray *result1 = [BLTestObject findObjectsInConnection:connection];
+        NSArray *result2 = [BLTestObject findObjectsInConnection:connection where:@"age = ? AND name = ?", @(20), @"alibaba"];
         
         XCTAssert([result1 count] >= [result2 count]);
         XCTAssert([result2 count] == count);
         
         u_int64_t length = 20;
-        NSArray *result3 = [BLTestObject findObjectsInDatabaseConnection:connection
-                                                                 orderBy:nil
-                                                                  length:length
-                                                                  offset:0
-                                                                   where:@"age = ? AND name = ?", @(20), @"alibaba"];
+        NSArray *result3 = [BLTestObject findObjectsInConnection:connection
+                                                         orderBy:nil
+                                                          length:length
+                                                          offset:0
+                                                           where:@"age = ? AND name = ?", @(20), @"alibaba"];
         XCTAssert([result3 count] == length);
     }];
 }
@@ -122,18 +128,18 @@
             [connection insertObject:object];
         }
         
-        NSArray *result1 = [BLTestObject findObjectsInDatabaseConnection:connection];
-        NSArray *result2 = [BLTestObject findObjectsInDatabaseConnection:connection predicate:[NSPredicate predicateWithFormat:@"age = %d AND name = %@", 20, @"alibaba"]];
+        NSArray *result1 = [BLTestObject findObjectsInConnection:connection];
+        NSArray *result2 = [BLTestObject findObjectsInConnection:connection predicate:[NSPredicate predicateWithFormat:@"age = %d AND name = %@", 20, @"alibaba"]];
         
         XCTAssert([result1 count] >= [result2 count]);
         XCTAssert([result2 count] == count);
         
         u_int64_t length = 20;
-        NSArray *result3 = [BLTestObject findObjectsInDatabaseConnection:connection
-                                                               predicate:[NSPredicate predicateWithFormat:@"age = %d AND name = %@", 20, @"alibaba"]
-                                                                sortTerm:nil
-                                                                  length:length
-                                                                  offset:0];
+        NSArray *result3 = [BLTestObject findObjectsInConnection:connection
+                                                       predicate:[NSPredicate predicateWithFormat:@"age = %d AND name = %@", 20, @"alibaba"]
+                                                        sortTerm:nil
+                                                          length:length
+                                                          offset:0];
         XCTAssert([result3 count] == length);
     }];
 }
@@ -151,9 +157,9 @@
             [connection insertObject:object];
         }
         
-        BLTestObject *testObject = [BLTestObject findFirstObjectInDatabaseConnection:connection fieldNames:@[@"name"] where:nil];
+        BLTestObject *testObject = [BLTestObject findFirstObjectInConnection:connection fieldNames:@[@"name"] where:nil];
         XCTAssertTrue(testObject.isFault);
-        NSMutableSet *targetFieldNames = [NSMutableSet setWithObjects:@"objectID", @"rowid", @"name", nil];
+        NSMutableSet *targetFieldNames = [NSMutableSet setWithObjects:@"uniqueId", @"rowid", @"name", nil];
         XCTAssertEqualObjects(testObject.preloadFieldNames, targetFieldNames);
         
         __unused NSString *groupName = testObject.groupName;
@@ -177,7 +183,7 @@
             [connection insertObject:object];
         }
         
-        BLTestObject *testObject = [BLTestObject findFirstObjectInDatabaseConnection:connection fieldNames:@[@"name"] where:nil];
+        BLTestObject *testObject = [BLTestObject findFirstObjectInConnection:connection fieldNames:@[@"name"] where:nil];
         XCTAssertTrue(testObject.isFault);
         testObject.name = @"alibaba1";
         testObject.groupName = @"alibaba1";
@@ -194,17 +200,17 @@
     
     [connection performReadWriteBlockAndWaitInTransaction:^(BOOL *rollback) {
         BLAccount *account = [BLAccount new];
-        NSString *objectID = account.objectID;
+        NSString *uniqueId = account.uniqueId;
         BLAccount *account1 = [BLAccount new];
-        NSString *objectID1 = account1.objectID;
+        NSString *uniqueId1 = account1.uniqueId;
         account.relationship = account1;
         account1.relationship = account;
         [connection insertObjects:@[account, account1]];
         
-        BLAccount *targeAccount = [BLAccount findFirstObjectInDatabaseConnection:connection valueForObjectID:objectID];
-        BLAccount *targeAccount1 = [BLAccount findFirstObjectInDatabaseConnection:connection valueForObjectID:objectID1];
-        XCTAssertEqualObjects(targeAccount.relationship.objectID, objectID1);
-        XCTAssertEqualObjects(targeAccount1.relationship.objectID, objectID);
+        BLAccount *targeAccount = [BLAccount findFirstObjectInConnection:connection uniqueId:uniqueId];
+        BLAccount *targeAccount1 = [BLAccount findFirstObjectInConnection:connection uniqueId:uniqueId1];
+        XCTAssertEqualObjects(targeAccount.relationship.uniqueId, uniqueId1);
+        XCTAssertEqualObjects(targeAccount1.relationship.uniqueId, uniqueId);
     }];
 }
 
@@ -214,20 +220,20 @@
     
     [connection performReadWriteBlockAndWaitInTransaction:^(BOOL *rollback) {
         BLAccount *account = [BLAccount new];
-        NSString *objectID = account.objectID;
+        NSString *uniqueId = account.uniqueId;
         
         BLAccount *account1 = [BLAccount new];
-        NSString *objectID1 = account1.objectID;
+        NSString *uniqueId1 = account1.uniqueId;
         
         BLAccount *account2 = [BLAccount new];
-        NSString *objectID2 = account2.objectID;
+        NSString *uniqueId2 = account2.uniqueId;
         
         account.relationships = (NSArray<BLAccount> *)@[account1, account2];
         [connection insertObjects:@[account, account1, account2]];
         
-        BLAccount *targeAccount = [BLAccount findFirstObjectInDatabaseConnection:connection valueForObjectID:objectID];
-        NSArray *objectIDs = @[objectID1, objectID2];
-        XCTAssertEqualObjects(targeAccount.relationshipsUUIDs, objectIDs);
+        BLAccount *targeAccount = [BLAccount findFirstObjectInConnection:connection uniqueId:uniqueId];
+        NSArray *uniqueIds = @[uniqueId1, uniqueId2];
+        XCTAssertEqualObjects(targeAccount.relationshipsIds, uniqueIds);
     }];
 }
 
@@ -264,7 +270,7 @@
                                                                 }];
     
     [connection performReadWriteBlockAndWaitInTransaction:^(BOOL *rollback) {
-        NSArray *result = [BLTestObject findObjectsInDatabaseConnection:connection];
+        NSArray *result = [BLTestObject findObjectsInConnection:connection];
         XCTAssertTrue([result count] == update + delete);
         
         NSArray *updateObjects = [result subarrayWithRange:NSMakeRange(0, update)];
@@ -350,13 +356,13 @@
     BLDatabase *database = [[BLStoreManager shareInstance] database];
     BLDatabaseConnection *connection = [[BLStoreManager shareInstance] uiConnection];
     
-    __block NSString *objectID = nil;
+    __block NSString *uniqueId = nil;
     [connection performReadWriteBlockAndWaitInTransaction:^(BOOL *rollback) {
         BLTestObject *testObject = [BLTestObject new];
         testObject.age = 20;
         testObject.name = @"alibaba";
         testObject.groupName = @"aliyun";
-        objectID = testObject.objectID;
+        uniqueId = testObject.uniqueId;
         [connection insertObject:testObject];
     }];
     
@@ -374,7 +380,7 @@
                                                                 }];
     
     [connection performReadWriteBlockAndWaitInTransaction:^(BOOL *rollback) {
-        BLTestObject *testObject = [BLTestObject findFirstObjectInDatabaseConnection:connection where:nil];
+        BLTestObject *testObject = [BLTestObject findFirstObjectInConnection:connection where:nil];
         testObject.age = 20;
         [connection updateObject:testObject];
         
@@ -390,13 +396,13 @@
     BLDatabase *database = [[BLStoreManager shareInstance] database];
     BLDatabaseConnection *connection = [[BLStoreManager shareInstance] uiConnection];
     
-    __block NSString *objectID = nil;
+    __block NSString *uniqueId = nil;
     [connection performReadWriteBlockAndWaitInTransaction:^(BOOL *rollback) {
         BLTestObject *testObject = [BLTestObject new];
         testObject.age = 20;
         testObject.name = @"alibaba";
         testObject.groupName = @"aliyun";
-        objectID = testObject.objectID;
+        uniqueId = testObject.uniqueId;
         [connection insertObject:testObject];
     }];
     
@@ -414,7 +420,7 @@
                                                                 }];
     
     [connection performReadWriteBlockAndWaitInTransaction:^(BOOL *rollback) {
-        BLTestObject *testObject = [BLTestObject findFirstObjectInDatabaseConnection:connection where:nil];
+        BLTestObject *testObject = [BLTestObject findFirstObjectInConnection:connection where:nil];
         testObject.age = 20;
         [connection updateObject:testObject];
         
@@ -429,13 +435,13 @@
     BLDatabase *database = [[BLStoreManager shareInstance] database];
     BLDatabaseConnection *connection = [[BLStoreManager shareInstance] uiConnection];
     
-    __block NSString *objectID = nil;
+    __block NSString *uniqueId = nil;
     [connection performReadWriteBlockAndWaitInTransaction:^(BOOL *rollback) {
         BLTestObject *testObject = [BLTestObject new];
         testObject.age = 20;
         testObject.name = @"alibaba";
         testObject.groupName = @"aliyun";
-        objectID = testObject.objectID;
+        uniqueId = testObject.uniqueId;
         [connection insertObject:testObject];
     }];
     
@@ -453,7 +459,7 @@
                                                                 }];
     
     [connection performReadWriteBlockAndWaitInTransaction:^(BOOL *rollback) {
-        BLTestObject *testObject = [BLTestObject findFirstObjectInDatabaseConnection:connection where:nil];
+        BLTestObject *testObject = [BLTestObject findFirstObjectInConnection:connection where:nil];
         [connection deleteObject:testObject];
         
         [connection insertObject:testObject];
@@ -465,7 +471,7 @@
 //- (void)testInsertPerformance
 //{
 //    BLDatabaseConnection *connection = [[BLStoreManager shareInstance] uiConnection];
-//    
+//
 //    [self measureBlock:^{
 //        [connection performReadWriteBlockAndWaitInTransaction:^(BOOL *rollback) {
 //            for (int i = 0; i < 100; i++) {

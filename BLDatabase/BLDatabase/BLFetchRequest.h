@@ -19,4 +19,7 @@
 // sortTerm eg:"rowid:1,uuid:0", 1 asc 0 desc, @"rowid" mean rowid desc
 @property (nonatomic, copy) NSString *sortTerm;
 
+// default is 50
+@property (nonatomic, assign) NSUInteger fetchBatchSize;
+
 @end

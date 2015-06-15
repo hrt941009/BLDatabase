@@ -17,9 +17,9 @@ BL_ARRAY_TYPE(BLAccount);
 @property (nonatomic, copy) NSString *nickname;
 
 @property (nonatomic, strong) BLAccount *relationship;
-@property (nonatomic, copy) NSString *relationshipUUID;
+@property (nonatomic, copy) NSString *relationshipId;
 
 @property (nonatomic, strong) NSArray<BLAccount> *relationships;
-@property (nonatomic, copy) NSArray *relationshipsUUIDs;
+@property (nonatomic, copy) NSArray *relationshipsIds;
 
 @end

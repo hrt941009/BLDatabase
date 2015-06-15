@@ -39,7 +39,7 @@ static NSString * const defaultName = @"default";
 
 + (instancetype)defaultDatabase
 {
-    NSString *path = [[[self class] documentPath] stringByAppendingFormat:@"/%@.sqlite3", [[self class] md5WithString:defaultName]];
+    NSString *path = [[[self class] dbPath] stringByAppendingFormat:@"/%@.sqlite3", [[self class] md5WithString:defaultName]];
     
     return [self databaseWithPath:path];
 }
@@ -48,7 +48,7 @@ static NSString * const defaultName = @"default";
 {
     NSString *path = nil;
     if (name) {
-        path = [[[self class] documentPath] stringByAppendingFormat:@"/%@.sqlite3", [[self class] md5WithString:name]];
+        path = [[[self class] dbPath] stringByAppendingFormat:@"/%@.sqlite3", [[self class] md5WithString:name]];
     }
     
     return [self databaseWithPath:path];
@@ -93,22 +93,22 @@ static NSString * const defaultName = @"default";
 - (void)setSchemaVersion:(NSUInteger)version
       withMigrationBlock:(BLMigrationBlock)block
 {
-    BLDatabaseConnection *databaseConnection = [self newConnection];
-    [databaseConnection performReadWriteBlockAndWaitInTransaction:^(BOOL *rollback) {
+    BLDatabaseConnection *connection = [self newConnection];
+    [connection performReadWriteBlockAndWaitInTransaction:^(BOOL *rollback) {
         int startingSchemaVersion = 0;
-        FMResultSet *rs = [databaseConnection.fmdb executeQuery:@"PRAGMA user_version"];
+        FMResultSet *rs = [connection.fmdb executeQuery:@"PRAGMA user_version"];
         if ([rs next]) {
             startingSchemaVersion = [rs intForColumnIndex:0];
         }
         [rs close];
         
         if (block) {
-            block(databaseConnection, startingSchemaVersion);
+            block(connection, startingSchemaVersion);
         }
         
         if (startingSchemaVersion < version) {
-            if (![databaseConnection.fmdb executeUpdate:[NSString stringWithFormat:@"PRAGMA user_version = %lu", (unsigned long)version]]) {
-                BLLogError(@"update version failed, Error:%@", [databaseConnection.fmdb lastError]);
+            if (![connection.fmdb executeUpdate:[NSString stringWithFormat:@"PRAGMA user_version = %lu", (unsigned long)version]]) {
+                BLLogError(@"update version failed, Error:%@", [connection.fmdb lastError]);
             }
         }
     }];
@@ -118,12 +118,7 @@ static NSString * const defaultName = @"default";
 
 - (BLDatabaseConnection *)newConnection
 {
-    return [self newConnectionWithType:BLPrivateQueueDatabaseConnectionType];
-}
-
-- (BLDatabaseConnection *)newConnectionWithType:(BLDatabaseConnectionType)type
-{
-    BLDatabaseConnection *connection = [[BLDatabaseConnection alloc] initWithDatabase:self withType:type];
+    BLDatabaseConnection *connection = [[BLDatabaseConnection alloc] initWithDatabase:self];
     [self.connections addObject:connection];
     
     return connection;
@@ -150,6 +145,21 @@ static NSString * const defaultName = @"default";
     NSString *baseDir = ([paths count] > 0) ? [paths objectAtIndex:0] : NSTemporaryDirectory();
     
     return baseDir;
+}
+
++ (NSString *)dbPath
+{
+    NSString *dbPath = [[self documentPath] stringByAppendingPathComponent:@"BLDB"];
+    NSFileManager *fileManager= [NSFileManager defaultManager];
+    if (![fileManager fileExistsAtPath:dbPath]) {
+        NSError *error = nil;
+        if(![fileManager createDirectoryAtPath:dbPath withIntermediateDirectories:YES attributes:nil error:&error]) {
+            // An error has occurred, do something to handle it
+            NSLog(@"Failed to create directory \"%@\". Error: %@", dbPath, error);
+        }
+    }
+    
+    return dbPath;
 }
 
 @end

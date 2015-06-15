@@ -10,4 +10,14 @@
 
 @implementation BLFetchRequest
 
+- (id)init
+{
+    self = [super init];
+    if (self) {
+        _fetchBatchSize = 50;
+    }
+    
+    return self;
+}
+
 @end

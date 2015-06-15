@@ -22,6 +22,9 @@
 - (void)validateRead;
 - (void)validateReadWriteInTransaction;
 
+- (BOOL)isInReadQueue;
+- (BOOL)isInWriteQueue;
+
 - (void)refreshWithInsertObjects:(NSArray *)insertObjects
                    updateObjects:(NSArray *)updateObjects
                    deleteObjects:(NSArray *)deleteObjects;

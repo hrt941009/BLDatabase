@@ -19,14 +19,14 @@
 @property (nonatomic, copy, readonly) NSString *groupByKeyPath;
 @property (nonatomic, assign, readonly) BOOL groupAscending;
 @property (nonatomic, strong, readonly) Class objectClass;
-@property (nonatomic, weak, readonly) BLDatabaseConnection *databaseConnection;
+@property (nonatomic, weak, readonly) BLDatabaseConnection *connection;
 @property (nonatomic, weak) id<BLFetchedResultsControllerDelegate> delegate;
 
 - (instancetype)initWithFetchRequest:(BLFetchRequest *)request
                       groupByKeyPath:(NSString *)groupByKeyPath
                       groupAscending:(BOOL)groupAscending
                          objectClass:(Class)objectClass
-                inDatabaseConnection:(BLDatabaseConnection *)databaseConnection;
+                inConnection:(BLDatabaseConnection *)connection;
 
 - (void)performFetch;
 

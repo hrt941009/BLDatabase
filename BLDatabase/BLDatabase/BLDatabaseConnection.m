@@ -13,8 +13,9 @@
 #import "BLBaseDBObject+Private.h"
 #import "BLDBCache.h"
 #import "BLDatabaseConfig.h"
-#import "FMDatabase+Private.h"
 #import "BLDBChangedObject.h"
+#import "FMDB.h"
+#import "FMDatabase+Hook.h"
 
 @interface BLDatabaseConnection () <BLDBCacheDelegate>
 {
@@ -36,15 +37,9 @@
 
 - (instancetype)initWithDatabase:(BLDatabase *)database
 {
-    return [self initWithDatabase:database withType:BLPrivateQueueDatabaseConnectionType];
-}
-
-- (instancetype)initWithDatabase:(BLDatabase *)database withType:(BLDatabaseConnectionType)type
-{
     self = [super init];
     if (self) {
         _database = database;
-        _type = type;
         _fmdb = [[FMDatabase alloc] initWithPath:database.databasePath];
         int flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_NOMUTEX | SQLITE_OPEN_PRIVATECACHE;
         [_fmdb openWithFlags:flags];
@@ -53,38 +48,37 @@
         
         sqlite3_config(SQLITE_CONFIG_SINGLETHREAD);
         
-        status = sqlite3_exec(self.sqlite, "PRAGMA journal_mode = WAL;", NULL, NULL, NULL);
+        status = sqlite3_exec(_fmdb.sqliteHandle, "PRAGMA journal_mode = WAL;", NULL, NULL, NULL);
         if (status != SQLITE_OK) {
-            BLLogError(@"Error setting PRAGMA journal_mode: %d %s", status, sqlite3_errmsg(self.sqlite));
+            BLLogError(@"Error setting PRAGMA journal_mode: %d %s", status, sqlite3_errmsg(_fmdb.sqliteHandle));
         }
         
-        sqlite3_wal_checkpoint(self.sqlite, NULL);
+        sqlite3_wal_checkpoint(_fmdb.sqliteHandle, NULL);
         
-        if (_type == BLMainQueueDatabaseConnectionType) {
-            self->readQueue = dispatch_get_main_queue();
-        } else {
-            self->readQueue = dispatch_queue_create("com.database.read", DISPATCH_QUEUE_SERIAL);
-            dispatch_queue_set_specific(self->readQueue,
-                                        &self->readSpecificKey,
-                                        (__bridge void *)self,
-                                        NULL);
-        }
+        self->readQueue = dispatch_queue_create("com.database.read", DISPATCH_QUEUE_SERIAL);
+        dispatch_queue_set_specific(self->readQueue,
+                                    &self->readSpecificKey,
+                                    (__bridge void *)self,
+                                    NULL);
         
         _dbCache = [BLDBCache new];
         _dbCache.delegate = self;
-        _cacheCountLimit = 500;
+        _cacheCountLimit = 1000;
         _dbCache.countLimit = _cacheCountLimit;
         _changedObjects = [NSMutableArray array];
+        
+        //[_fmdb registerNotification:[NSNotificationCenter defaultCenter]];
+        //[self addDatabaseObserver];
     }
     
     return self;
 }
 
 #pragma mark - life cycle
- 
+
 - (void)dealloc
 {
-    
+    [self removeDatabaseObserver];
 }
 
 #pragma mark - getter & private
@@ -92,11 +86,6 @@
 - (FMDatabase *)fmdb
 {
     return _fmdb;
-}
-
-- (sqlite3 *)sqlite
-{
-    return [_fmdb sqlite];
 }
 
 - (BLDBCache *)cachedObjects
@@ -113,8 +102,18 @@
 
 - (void)setCacheCountLimit:(NSUInteger)cacheCountLimit
 {
-    _cacheCountLimit = cacheCountLimit;
-    _dbCache.countLimit = cacheCountLimit;
+    void(^block)(void) = ^(void){
+        _cacheCountLimit = cacheCountLimit;
+        _dbCache.countLimit = cacheCountLimit;
+    };
+    
+    if ([self isInWriteQueue]) {
+        block();
+    } else {
+        [self performReadBlockAndWait:^{
+            block();
+        }];
+    }
 }
 
 #pragma mark - perform block
@@ -124,7 +123,7 @@
     void *context = dispatch_get_specific(&self->readSpecificKey);
     BOOL hasContext = context ? YES : NO;
     
-    return (_type == BLMainQueueDatabaseConnectionType && [NSThread isMainThread]) || hasContext;
+    return hasContext;
 }
 
 - (BOOL)isInWriteQueue
@@ -142,7 +141,7 @@
             block();
         }
     };
-
+    
     if ([self isInReadQueue]) {
         newBlock();
     } else {
@@ -280,7 +279,7 @@
 - (void)touchedObjects:(id)objects
 {
     for (id object in objects) {
-        [object touchedInDatabaseConnection:self];
+        [object touchedInConnection:self];
     }
 }
 
@@ -294,7 +293,7 @@
 - (void)insertOrUpdateObjects:(NSArray *)objects
 {
     for (id object in objects) {
-        [object insertOrUpdateInDatabaseConnection:self];
+        [object insertOrUpdateInConnection:self];
     }
 }
 
@@ -308,7 +307,7 @@
 - (void)insertObjects:(NSArray *)objects
 {
     for (id object in objects) {
-        [object insertInDatabaseConnection:self];
+        [object insertInConnection:self];
     }
 }
 
@@ -322,7 +321,7 @@
 - (void)updateObjects:(NSArray *)objects
 {
     for (id object in objects) {
-        [object updateInDatabaseConnection:self];
+        [object updateInConnection:self];
     }
 }
 
@@ -336,26 +335,25 @@
 - (void)deleteObjects:(NSArray *)objects
 {
     for (id object in objects) {
-        [object deleteInDatabaseConnection:self];
+        [object deleteInConnection:self];
     }
 }
 
 - (void)beginTransaction
 {
-    [BLBaseDBObject beginChangedNotificationInDatabaseConnection:self];
     [self.fmdb beginTransaction];
 }
 
 - (void)commit
 {
     [self.fmdb commit];
-    [BLBaseDBObject endChangedNotificationInDatabaseConnection:self];
+    [BLBaseDBObject commitChangedNotificationInConnection:self];
 }
 
 - (void)rollback
 {
     [self.fmdb rollback];
-    [BLBaseDBObject rollbackChangedNotificationInDatabaseConnection:self];
+    [BLBaseDBObject rollbackChangedNotificationInConnection:self];
 }
 
 #pragma mark - refresh
@@ -364,18 +362,106 @@
                    updateObjects:(NSArray *)updateObjects
                    deleteObjects:(NSArray *)deleteObjects
 {
-    // 因为已经在write thread，所以此处只需调用到read thread
     [self performReadBlock:^{
-        for (BLDBChangedObject *object in insertObjects) {
-            [self.dbCache removeObjectForKey:[object.objectClass cacheKeyWithValueForObjectID:object.objectID]];
-        }
+//        for (BLDBChangedObject *object in insertObjects) {
+//            [self.dbCache removeObjectForKey:[BLBaseDBObject cacheKeyWithUniqueId:object.uniqueId]];
+//        }
+        
         for (BLDBChangedObject *object in updateObjects) {
-            [self.dbCache removeObjectForKey:[object.objectClass cacheKeyWithValueForObjectID:object.objectID]];
+            [self.dbCache removeObjectForKey:[BLBaseDBObject cacheKeyWithUniqueId:object.uniqueId]];
         }
+        
         for (BLDBChangedObject *object in deleteObjects) {
-            [self.dbCache removeObjectForKey:[object.objectClass cacheKeyWithValueForObjectID:object.objectID]];
+            [self.dbCache removeObjectForKey:[BLBaseDBObject cacheKeyWithUniqueId:object.uniqueId]];
         }
     }];
+}
+
+#pragma mark - DB notification
+
+- (void)addDatabaseObserver
+{
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(insertObjectNotification:)
+                                                 name:kSQLTableInsertNotification
+                                               object:_fmdb];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(updateObjectNotification:)
+                                                 name:kSQLTableUpdateNotification
+                                               object:_fmdb];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(deleteObjectNotification:)
+                                                 name:kSQLTableUpdateNotification
+                                               object:_fmdb];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(commitNotification:)
+                                                 name:kSQLTransactionCommitNotification
+                                               object:_fmdb];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(rollbackNotification:)
+                                                 name:kSQLTransactionRollbackNotification
+                                               object:_fmdb];
+}
+
+- (void)removeDatabaseObserver
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
+- (void)insertObjectNotification:(NSNotification *)notification
+{
+    //NSNumber *rowid = [notification userInfo][kSQLRowIDKey];
+    NSString *tableName = [notification userInfo][kSQLTableNameKey];
+    //NSString *dbName = [notification userInfo][kSQLDatabaseNameKey];
+    
+    BLDBChangedObject *object = [BLDBChangedObject new];
+    //object.rowid = [rowid longLongValue];
+    object.tableName = tableName;
+    object.type = BLDBChangedObjectInsert;
+    
+    [self.changedObjects addObject:object];
+}
+
+- (void)updateObjectNotification:(NSNotification *)notification
+{
+    //NSNumber *rowid = [notification userInfo][kSQLRowIDKey];
+    NSString *tableName = [notification userInfo][kSQLTableNameKey];
+    //NSString *dbName = [notification userInfo][kSQLDatabaseNameKey];
+    
+    BLDBChangedObject *object = [BLDBChangedObject new];
+    //object.rowid = [rowid longLongValue];
+    object.tableName = tableName;
+    object.type = BLDBChangedObjectUpdate;
+    
+    [self.changedObjects addObject:object];
+}
+
+- (void)deleteObjectNotification:(NSNotification *)notification
+{
+    //NSNumber *rowid = [notification userInfo][kSQLRowIDKey];
+    NSString *tableName = [notification userInfo][kSQLTableNameKey];
+    //NSString *dbName = [notification userInfo][kSQLDatabaseNameKey];
+    
+    BLDBChangedObject *object = [BLDBChangedObject new];
+    //object.rowid = [rowid longLongValue];
+    object.tableName = tableName;
+    object.type = BLDBChangedObjectDelete;
+    
+    [self.changedObjects addObject:object];
+}
+
+-(void)commitNotification:(NSNotification *)notification
+{
+    [BLBaseDBObject commitChangedNotificationInConnection:self];
+}
+
+-(void)rollbackNotification:(NSNotification *)notification
+{
+    [BLBaseDBObject rollbackChangedNotificationInConnection:self];
 }
 
 #pragma mark - BLDBCacheDelegate

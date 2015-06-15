@@ -8,6 +8,26 @@
 
 #import "BLDBChangedObject.h"
 
+@class BLBaseDBObject;
+
+@interface BLDBChangedObject ()
+
+@property (nonatomic, strong) BLBaseDBObject *object;
+
+@end
+
 @implementation BLDBChangedObject
+
+@synthesize object = _object;
+
+- (BLBaseDBObject *)object
+{
+    return _object;
+}
+
+- (void)setObject:(BLBaseDBObject *)object
+{
+    _object = object;
+}
 
 @end

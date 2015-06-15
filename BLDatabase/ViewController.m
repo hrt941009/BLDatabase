@@ -41,13 +41,13 @@
     
     self.database = [BLDatabase defaultDatabase];
     [self.database setSchemaVersion:1
-                 withMigrationBlock:^(BLDatabaseConnection *databaseConnection, NSUInteger oldSchemaVersion) {
-                         [BLTestObject createTableAndIndexIfNeededInDatabaseConnection:databaseConnection];
-                         [BLAccount createTableAndIndexIfNeededInDatabaseConnection:databaseConnection];
+                 withMigrationBlock:^(BLDatabaseConnection *connection, NSUInteger oldSchemaVersion) {
+                         [BLTestObject createTableAndIndexIfNeededInConnection:connection];
+                         [BLAccount createTableAndIndexIfNeededInConnection:connection];
                  }];
     
-    self.uiConnection = [self.database newConnectionWithType:BLMainQueueDatabaseConnectionType];
-    self.backgroundConnection = [self.database newConnectionWithType:BLPrivateQueueDatabaseConnectionType];
+    self.uiConnection = [self.database newConnection];
+    self.backgroundConnection = [self.database newConnection];
     
     self.backgroundQueue = dispatch_queue_create("com.background.sql", DISPATCH_QUEUE_SERIAL);
     
@@ -61,7 +61,7 @@
                                                                                        groupByKeyPath:@"groupName"
                                                                                        groupAscending:YES
                                                                                           objectClass:[BLTestObject class]
-                                                                                 inDatabaseConnection:self.uiConnection];
+                                                                                 inConnection:self.uiConnection];
     [controller performFetch];
     controller.delegate = self;
     self.fetchedResultsController = controller;
@@ -82,50 +82,17 @@
 {
     __weak BLDatabaseConnection *connection = self.backgroundConnection;
     [connection performReadWriteBlockInTransaction:^(BOOL *rollback) {
-        NSArray *result = [BLTestObject findObjectsInDatabaseConnection:connection];
+        NSArray *result = [BLTestObject findObjectsInConnection:connection];
         [connection deleteObjects:result];
     }];
 }
 
 - (void)rightPressed:(id)sender
 {
-    NSMutableArray *result = [NSMutableArray array];
-    NSString *string = nil;
-    for (int i = 0; i < 10000; i++) {
-        NSString *temp = [[NSUUID UUID] UUIDString];
-        if (i == 9999) {
-            string = temp;
-        }
-        [result addObject:temp];
-    }
-    
-    NSLog(@"---begin");
-    [result enumerateObjectsWithOptions:NSEnumerationConcurrent usingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        if ([obj isEqualToString:string]) {
-            NSLog(@"equal");
-        }
-    }];
-    NSLog(@"---end");
-    
-    NSLog(@"---begin");
-    NSPredicate *predExists = [NSPredicate predicateWithFormat:
-                               @"SELF = %@", string];
-    NSUInteger index = [result indexOfObjectPassingTest:
-                        ^(id obj, NSUInteger idx, BOOL *stop) {
-                            return [predExists evaluateWithObject:obj];
-                        }];
-    NSLog(@"---end");
-    
-    NSLog(@"---begin");
-    for (int i = 0; i < 1000; i++) {
-        [result removeObjectAtIndex:100];
-    }
-    NSLog(@"---end");
-    
     __weak BLDatabaseConnection *connection = self.backgroundConnection;
     [connection performReadWriteBlockInTransaction:^(BOOL *rollback) {
-        int count = 50;
-        NSArray *result = [BLTestObject findObjectsInDatabaseConnection:connection
+        int count = 100;
+        NSArray *result = [BLTestObject findObjectsInConnection:connection
                                                                 orderBy:nil
                                                                  length:count
                                                                  offset:0
@@ -358,7 +325,7 @@
 {
     __weak BLDatabaseConnection *connection = self.backgroundConnection;
     [connection performReadWriteBlockInTransaction:^(BOOL *rollback) {
-        NSArray *result = [BLTestObject findObjectsInDatabaseConnection:connection];
+        NSArray *result = [BLTestObject findObjectsInConnection:connection];
         [connection deleteObjects:result];
     }];
 }
@@ -366,14 +333,16 @@
 - (IBAction)findPressed:(id)sender
 {
     __weak BLDatabaseConnection *connection = self.backgroundConnection;
-    [connection performReadBlockAndWait:^(void) {
-        NSArray *result = [BLTestObject findObjectsInDatabaseConnection:connection];
-        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:nil
-                                                        message:[NSString stringWithFormat:@"%zd", [result count]]
-                                                       delegate:nil
-                                              cancelButtonTitle:nil
-                                              otherButtonTitles:@"cancel", nil];
-        [alert show];
+    [connection performReadBlock:^(void) {
+        NSArray *result = [BLTestObject findObjectsInConnection:connection];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:nil
+                                                            message:[NSString stringWithFormat:@"%zd", [result count]]
+                                                           delegate:nil
+                                                  cancelButtonTitle:nil
+                                                  otherButtonTitles:@"cancel", nil];
+            [alert show];
+        });
     }];
 }
 @end

@@ -16,7 +16,9 @@ typedef NS_ENUM(NSUInteger, BLDBChangedObjectType) {
 
 @interface BLDBChangedObject : NSObject
 
-@property (nonatomic, copy) NSString *objectID;
+@property (nonatomic, copy) NSString *uniqueId;
+//@property (nonatomic, assign) int64_t rowid;
+@property (nonatomic, copy) NSString *tableName;
 @property (nonatomic, strong) Class objectClass;
 @property (nonatomic, copy) NSArray *changedFiledNames; // just for update
 @property (nonatomic, assign) BLDBChangedObjectType type;

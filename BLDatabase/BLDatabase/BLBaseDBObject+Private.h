@@ -12,23 +12,23 @@
 
 @interface BLBaseDBObject (Private)
 
-+ (void)beginChangedNotificationInDatabaseConnection:(BLDatabaseConnection *)databaseConnection;
++ (void)commitChangedNotificationInConnection:(BLDatabaseConnection *)connection;
 
-+ (void)endChangedNotificationInDatabaseConnection:(BLDatabaseConnection *)databaseConnection;
++ (void)rollbackChangedNotificationInConnection:(BLDatabaseConnection *)connection;
 
-+ (void)rollbackChangedNotificationInDatabaseConnection:(BLDatabaseConnection *)databaseConnection;
++ (NSString *)cacheKeyWithUniqueId:(NSString *)uniqueId;
 
-+ (NSString *)cacheKeyWithValueForObjectID:(NSString *)valueForObjectID;
+- (void)setRowid:(int64_t)rowid;
 
 #pragma mark - touched object
 
-- (void)touchedInDatabaseConnection:(BLDatabaseConnection *)databaseConnection;
+- (void)touchedInConnection:(BLDatabaseConnection *)connection;
 
 #pragma mark - insert/update/delete
 
-- (void)insertOrUpdateInDatabaseConnection:(BLDatabaseConnection *)databaseConnection;
-- (void)insertInDatabaseConnection:(BLDatabaseConnection *)databaseConnection;
-- (void)updateInDatabaseConnection:(BLDatabaseConnection *)databaseConnection;
-- (void)deleteInDatabaseConnection:(BLDatabaseConnection *)databaseConnection;
+- (void)insertOrUpdateInConnection:(BLDatabaseConnection *)connection;
+- (void)insertInConnection:(BLDatabaseConnection *)connection;
+- (void)updateInConnection:(BLDatabaseConnection *)connection;
+- (void)deleteInConnection:(BLDatabaseConnection *)connection;
 
 @end

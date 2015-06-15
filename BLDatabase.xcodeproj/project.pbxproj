@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		C387FDD31B2DACEA00D88EFB /* BLFetchedResultsController.m in Sources */ = {isa = PBXBuildFile; fileRef = C387FDD01B2DACEA00D88EFB /* BLFetchedResultsController.m */; };
+		C387FDD41B2DACEA00D88EFB /* BLFetchedResultsController.m in Sources */ = {isa = PBXBuildFile; fileRef = C387FDD01B2DACEA00D88EFB /* BLFetchedResultsController.m */; };
+		C387FDD51B2DACEA00D88EFB /* BLFetchRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = C387FDD21B2DACEA00D88EFB /* BLFetchRequest.m */; };
+		C387FDD61B2DACEA00D88EFB /* BLFetchRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = C387FDD21B2DACEA00D88EFB /* BLFetchRequest.m */; };
 		C3EE87621B0C8577001EBCDE /* BLBaseDBObject.m in Sources */ = {isa = PBXBuildFile; fileRef = C3EE87481B0C8577001EBCDE /* BLBaseDBObject.m */; };
 		C3EE87631B0C8577001EBCDE /* BLBaseDBObject.m in Sources */ = {isa = PBXBuildFile; fileRef = C3EE87481B0C8577001EBCDE /* BLBaseDBObject.m */; };
 		C3EE87641B0C8577001EBCDE /* BLDatabase.m in Sources */ = {isa = PBXBuildFile; fileRef = C3EE874B1B0C8577001EBCDE /* BLDatabase.m */; };
@@ -21,16 +25,10 @@
 		C3EE876D1B0C8577001EBCDE /* BLDBCache.m in Sources */ = {isa = PBXBuildFile; fileRef = C3EE87551B0C8577001EBCDE /* BLDBCache.m */; };
 		C3EE876E1B0C8577001EBCDE /* BLDBChangedObject.m in Sources */ = {isa = PBXBuildFile; fileRef = C3EE87571B0C8577001EBCDE /* BLDBChangedObject.m */; };
 		C3EE876F1B0C8577001EBCDE /* BLDBChangedObject.m in Sources */ = {isa = PBXBuildFile; fileRef = C3EE87571B0C8577001EBCDE /* BLDBChangedObject.m */; };
-		C3EE87701B0C8577001EBCDE /* BLFetchedResultsController.m in Sources */ = {isa = PBXBuildFile; fileRef = C3EE87591B0C8577001EBCDE /* BLFetchedResultsController.m */; };
-		C3EE87711B0C8577001EBCDE /* BLFetchedResultsController.m in Sources */ = {isa = PBXBuildFile; fileRef = C3EE87591B0C8577001EBCDE /* BLFetchedResultsController.m */; };
-		C3EE87721B0C8577001EBCDE /* BLFetchRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = C3EE875B1B0C8577001EBCDE /* BLFetchRequest.m */; };
-		C3EE87731B0C8577001EBCDE /* BLFetchRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = C3EE875B1B0C8577001EBCDE /* BLFetchRequest.m */; };
 		C3EE87741B0C8577001EBCDE /* BLNull.m in Sources */ = {isa = PBXBuildFile; fileRef = C3EE875D1B0C8577001EBCDE /* BLNull.m */; };
 		C3EE87751B0C8577001EBCDE /* BLNull.m in Sources */ = {isa = PBXBuildFile; fileRef = C3EE875D1B0C8577001EBCDE /* BLNull.m */; };
 		C3EE87761B0C8577001EBCDE /* FMDatabase+Hook.m in Sources */ = {isa = PBXBuildFile; fileRef = C3EE875F1B0C8577001EBCDE /* FMDatabase+Hook.m */; };
 		C3EE87771B0C8577001EBCDE /* FMDatabase+Hook.m in Sources */ = {isa = PBXBuildFile; fileRef = C3EE875F1B0C8577001EBCDE /* FMDatabase+Hook.m */; };
-		C3EE87781B0C8577001EBCDE /* FMDatabase+Private.m in Sources */ = {isa = PBXBuildFile; fileRef = C3EE87611B0C8577001EBCDE /* FMDatabase+Private.m */; };
-		C3EE87791B0C8577001EBCDE /* FMDatabase+Private.m in Sources */ = {isa = PBXBuildFile; fileRef = C3EE87611B0C8577001EBCDE /* FMDatabase+Private.m */; };
 		C3EE877B1B0DACD6001EBCDE /* BLMemoryDatabaseTest.m in Sources */ = {isa = PBXBuildFile; fileRef = C3EE877A1B0DACD6001EBCDE /* BLMemoryDatabaseTest.m */; };
 		C3FD03921B0ADE7C0049B42E /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = C3FD03911B0ADE7C0049B42E /* main.m */; };
 		C3FD03951B0ADE7C0049B42E /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = C3FD03941B0ADE7C0049B42E /* AppDelegate.m */; };
@@ -76,6 +74,10 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		C387FDCF1B2DACEA00D88EFB /* BLFetchedResultsController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BLFetchedResultsController.h; sourceTree = "<group>"; };
+		C387FDD01B2DACEA00D88EFB /* BLFetchedResultsController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BLFetchedResultsController.m; sourceTree = "<group>"; };
+		C387FDD11B2DACEA00D88EFB /* BLFetchRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BLFetchRequest.h; sourceTree = "<group>"; };
+		C387FDD21B2DACEA00D88EFB /* BLFetchRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BLFetchRequest.m; sourceTree = "<group>"; };
 		C3EE87451B0C8577001EBCDE /* BLBaseDBObject+Common.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "BLBaseDBObject+Common.h"; sourceTree = "<group>"; };
 		C3EE87461B0C8577001EBCDE /* BLBaseDBObject+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "BLBaseDBObject+Private.h"; sourceTree = "<group>"; };
 		C3EE87471B0C8577001EBCDE /* BLBaseDBObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BLBaseDBObject.h; sourceTree = "<group>"; };
@@ -95,16 +97,10 @@
 		C3EE87551B0C8577001EBCDE /* BLDBCache.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BLDBCache.m; sourceTree = "<group>"; };
 		C3EE87561B0C8577001EBCDE /* BLDBChangedObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BLDBChangedObject.h; sourceTree = "<group>"; };
 		C3EE87571B0C8577001EBCDE /* BLDBChangedObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BLDBChangedObject.m; sourceTree = "<group>"; };
-		C3EE87581B0C8577001EBCDE /* BLFetchedResultsController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BLFetchedResultsController.h; sourceTree = "<group>"; };
-		C3EE87591B0C8577001EBCDE /* BLFetchedResultsController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BLFetchedResultsController.m; sourceTree = "<group>"; };
-		C3EE875A1B0C8577001EBCDE /* BLFetchRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BLFetchRequest.h; sourceTree = "<group>"; };
-		C3EE875B1B0C8577001EBCDE /* BLFetchRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BLFetchRequest.m; sourceTree = "<group>"; };
 		C3EE875C1B0C8577001EBCDE /* BLNull.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BLNull.h; sourceTree = "<group>"; };
 		C3EE875D1B0C8577001EBCDE /* BLNull.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BLNull.m; sourceTree = "<group>"; };
 		C3EE875E1B0C8577001EBCDE /* FMDatabase+Hook.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "FMDatabase+Hook.h"; sourceTree = "<group>"; };
 		C3EE875F1B0C8577001EBCDE /* FMDatabase+Hook.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "FMDatabase+Hook.m"; sourceTree = "<group>"; };
-		C3EE87601B0C8577001EBCDE /* FMDatabase+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "FMDatabase+Private.h"; sourceTree = "<group>"; };
-		C3EE87611B0C8577001EBCDE /* FMDatabase+Private.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "FMDatabase+Private.m"; sourceTree = "<group>"; };
 		C3EE877A1B0DACD6001EBCDE /* BLMemoryDatabaseTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BLMemoryDatabaseTest.m; sourceTree = "<group>"; };
 		C3FD038C1B0ADE7C0049B42E /* BLDatabase.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BLDatabase.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C3FD03901B0ADE7C0049B42E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -170,6 +166,10 @@
 		C3EE87441B0C8577001EBCDE /* BLDatabase */ = {
 			isa = PBXGroup;
 			children = (
+				C387FDCF1B2DACEA00D88EFB /* BLFetchedResultsController.h */,
+				C387FDD01B2DACEA00D88EFB /* BLFetchedResultsController.m */,
+				C387FDD11B2DACEA00D88EFB /* BLFetchRequest.h */,
+				C387FDD21B2DACEA00D88EFB /* BLFetchRequest.m */,
 				C3EE87451B0C8577001EBCDE /* BLBaseDBObject+Common.h */,
 				C3EE87461B0C8577001EBCDE /* BLBaseDBObject+Private.h */,
 				C3EE87471B0C8577001EBCDE /* BLBaseDBObject.h */,
@@ -189,16 +189,10 @@
 				C3EE87551B0C8577001EBCDE /* BLDBCache.m */,
 				C3EE87561B0C8577001EBCDE /* BLDBChangedObject.h */,
 				C3EE87571B0C8577001EBCDE /* BLDBChangedObject.m */,
-				C3EE87581B0C8577001EBCDE /* BLFetchedResultsController.h */,
-				C3EE87591B0C8577001EBCDE /* BLFetchedResultsController.m */,
-				C3EE875A1B0C8577001EBCDE /* BLFetchRequest.h */,
-				C3EE875B1B0C8577001EBCDE /* BLFetchRequest.m */,
 				C3EE875C1B0C8577001EBCDE /* BLNull.h */,
 				C3EE875D1B0C8577001EBCDE /* BLNull.m */,
 				C3EE875E1B0C8577001EBCDE /* FMDatabase+Hook.h */,
 				C3EE875F1B0C8577001EBCDE /* FMDatabase+Hook.m */,
-				C3EE87601B0C8577001EBCDE /* FMDatabase+Private.h */,
-				C3EE87611B0C8577001EBCDE /* FMDatabase+Private.m */,
 			);
 			path = BLDatabase;
 			sourceTree = "<group>";
@@ -433,7 +427,6 @@
 				C3EE87761B0C8577001EBCDE /* FMDatabase+Hook.m in Sources */,
 				C3FD04161B0ADFCC0049B42E /* BLAccount.m in Sources */,
 				C3FD04081B0ADFA00049B42E /* FMDatabase.m in Sources */,
-				C3EE87721B0C8577001EBCDE /* BLFetchRequest.m in Sources */,
 				C3FD03981B0ADE7C0049B42E /* ViewController.m in Sources */,
 				C3EE87621B0C8577001EBCDE /* BLBaseDBObject.m in Sources */,
 				C3EE87661B0C8577001EBCDE /* BLDatabaseConnection.m in Sources */,
@@ -443,8 +436,9 @@
 				C3FD04101B0ADFA00049B42E /* FMResultSet.m in Sources */,
 				C3FD04041B0ADFA00049B42E /* FMTokenizers.m in Sources */,
 				C3FD03921B0ADE7C0049B42E /* main.m in Sources */,
+				C387FDD51B2DACEA00D88EFB /* BLFetchRequest.m in Sources */,
+				C387FDD31B2DACEA00D88EFB /* BLFetchedResultsController.m in Sources */,
 				C3EE876E1B0C8577001EBCDE /* BLDBChangedObject.m in Sources */,
-				C3EE87781B0C8577001EBCDE /* FMDatabase+Private.m in Sources */,
 				C3FD040E1B0ADFA00049B42E /* FMDatabaseQueue.m in Sources */,
 				C3EE876C1B0C8577001EBCDE /* BLDBCache.m in Sources */,
 				C3EE876A1B0C8577001EBCDE /* BLDatabaseUtil.m in Sources */,
@@ -453,7 +447,6 @@
 				C3EE87641B0C8577001EBCDE /* BLDatabase.m in Sources */,
 				C3FD04181B0ADFCC0049B42E /* BLTestObject.m in Sources */,
 				C3EE87681B0C8577001EBCDE /* BLDatabaseManager.m in Sources */,
-				C3EE87701B0C8577001EBCDE /* BLFetchedResultsController.m in Sources */,
 				C3FD040A1B0ADFA00049B42E /* FMDatabaseAdditions.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -471,22 +464,21 @@
 				C3FD04191B0ADFCC0049B42E /* BLTestObject.m in Sources */,
 				C3EE87631B0C8577001EBCDE /* BLBaseDBObject.m in Sources */,
 				C3FD04091B0ADFA00049B42E /* FMDatabase.m in Sources */,
-				C3EE87731B0C8577001EBCDE /* BLFetchRequest.m in Sources */,
 				C3FD04211B0AE5E70049B42E /* BLStoreManager.m in Sources */,
 				C3FD040B1B0ADFA00049B42E /* FMDatabaseAdditions.m in Sources */,
 				C3FD04051B0ADFA00049B42E /* FMTokenizers.m in Sources */,
 				C3EE87691B0C8577001EBCDE /* BLDatabaseManager.m in Sources */,
 				C3EE87671B0C8577001EBCDE /* BLDatabaseConnection.m in Sources */,
-				C3EE87791B0C8577001EBCDE /* FMDatabase+Private.m in Sources */,
 				C3EE87651B0C8577001EBCDE /* BLDatabase.m in Sources */,
 				C3FD04111B0ADFA00049B42E /* FMResultSet.m in Sources */,
 				C3EE876D1B0C8577001EBCDE /* BLDBCache.m in Sources */,
 				C3FD04031B0ADFA00049B42E /* FMDatabase+FTS3.m in Sources */,
 				C3EE876B1B0C8577001EBCDE /* BLDatabaseUtil.m in Sources */,
+				C387FDD61B2DACEA00D88EFB /* BLFetchRequest.m in Sources */,
 				C3FD04071B0ADFA00049B42E /* FMDatabase+InMemoryOnDiskIO.m in Sources */,
 				C3EE87751B0C8577001EBCDE /* BLNull.m in Sources */,
 				C3FD04171B0ADFCC0049B42E /* BLAccount.m in Sources */,
-				C3EE87711B0C8577001EBCDE /* BLFetchedResultsController.m in Sources */,
+				C387FDD41B2DACEA00D88EFB /* BLFetchedResultsController.m in Sources */,
 				C3FD03AC1B0ADE7C0049B42E /* BLDatabaseTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

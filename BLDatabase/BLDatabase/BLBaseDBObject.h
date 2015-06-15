@@ -15,7 +15,6 @@
 extern NSString * const BLDatabaseInsertKey;
 extern NSString * const BLDatabaseUpdateKey;
 extern NSString * const BLDatabaseDeleteKey;
-//extern NSString * const BLBaseDBObjectChangedTimestampKey;
 
 extern NSString * const BLDatabaseChangedNotification;
 
@@ -25,10 +24,10 @@ extern NSString * const BLDatabaseChangedNotification;
 
 @required
 
-// db tableName, you can overwrite
+// db tableName
 + (NSString *)tableName;
 
-// db pk, you can overwrite
+// db pk
 + (NSString *)primaryKeyFieldName;
 
 @optional
@@ -42,26 +41,29 @@ extern NSString * const BLDatabaseChangedNotification;
 // db字段默认值
 + (NSDictionary *)defaultValues;
 
+// default is NO
++ (BOOL)usingFTS;
+
 // using this when delete self also delete cascade objects
 - (NSArray *)cascadeObjects;
 
-- (BOOL)enableCache;
+- (BOOL)enableCachedInConnection;
 
-- (BOOL)shouldTouchedInDatabaseConnection:(BLDatabaseConnection *)databaseConnection;
+- (BOOL)shouldTouchedInConnection:(BLDatabaseConnection *)connection;
 
-- (BOOL)shouldInsertInDatabaseConnection:(BLDatabaseConnection *)databaseConnection;
+- (BOOL)shouldInsertInConnection:(BLDatabaseConnection *)connection;
 
-- (BOOL)shouldUpdateInDatabaseConnection:(BLDatabaseConnection *)databaseConnection;
+- (BOOL)shouldUpdateInConnection:(BLDatabaseConnection *)connection;
 
-- (BOOL)shouldDeleteInDatabaseConnection:(BLDatabaseConnection *)databaseConnection;
+- (BOOL)shouldDeleteInConnection:(BLDatabaseConnection *)connection;
 
-- (void)didTouchedInDatabaseConnection:(BLDatabaseConnection *)databaseConnection withError:(NSError *)error;
+- (void)didTouchedInConnection:(BLDatabaseConnection *)connection withError:(NSError *)error;
 
-- (void)didInsertInDatabaseConnection:(BLDatabaseConnection *)databaseConnection withError:(NSError *)error;
+- (void)didInsertInConnection:(BLDatabaseConnection *)connection withError:(NSError *)error;
 
-- (void)didUpdateInDatabaseConnection:(BLDatabaseConnection *)databaseConnection withError:(NSError *)error;
+- (void)didUpdateInConnection:(BLDatabaseConnection *)connection withError:(NSError *)error;
 
-- (void)didDeleteInDatabaseConnection:(BLDatabaseConnection *)databaseConnection withError:(NSError *)error;
+- (void)didDeleteInConnection:(BLDatabaseConnection *)connection withError:(NSError *)error;
 
 @end
 
@@ -106,9 +108,9 @@ typedef NS_ENUM(NSInteger, BLBaseDBObjectFieldType) {
 
 @interface BLBaseDBObject : NSObject <BLBaseDBObject, NSCopying, NSCoding>
 
-@property (nonatomic, weak, readonly) BLDatabaseConnection *databaseConnection;
-@property (nonatomic, copy, readonly) NSString *objectID;
+@property (nonatomic, weak, readonly) BLDatabaseConnection *connection;
 @property (nonatomic, assign, readonly) int64_t rowid;
+@property (nonatomic, copy, readonly) NSString *uniqueId;
 @property (nonatomic, assign, readonly) BOOL isFault;
 @property (nonatomic, strong, readonly) NSMutableSet *changedFieldNames;
 @property (nonatomic, strong, readonly) NSMutableSet *preloadFieldNames;
@@ -118,18 +120,14 @@ typedef NS_ENUM(NSInteger, BLBaseDBObjectFieldType) {
 
 + (BLBaseDBObjectFieldInfo *)infoForFieldName:(NSString *)fieldName;
 
-+ (NSString *)objectIDFieldName;
-
 + (NSString *)rowidFieldName;
 
-- (NSString *)valueForPrimaryKeyFieldName;
-
-- (NSString *)valueForObjectID;
-
-- (int64_t)valueForRowid;
++ (NSString *)uniqueIdFieldName;
 
 - (NSString *)detailDescription;
 
-- (id)copyWithIgnoredProperties:(NSArray *)ignoredProperties;
+- (id)copyWithExcludeProperties:(NSArray *)excludeProperties;
+
+- (id)copyWithIncludeProperties:(NSArray *)includeProperties;
 
 @end
