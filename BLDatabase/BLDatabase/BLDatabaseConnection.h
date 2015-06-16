@@ -13,7 +13,7 @@
 @interface BLDatabaseConnection : NSObject
 
 @property (nonatomic, strong, readonly) BLDatabase *database;
-@property (nonatomic, assign) NSUInteger cacheCountLimit; //default is 1000;
+@property (nonatomic, assign) NSUInteger cacheCountLimit; //default is 500;
 
 // type is BLPrivateQueueDatabaseConnectionType
 - (instancetype)initWithDatabase:(BLDatabase *)database;

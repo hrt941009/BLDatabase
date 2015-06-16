@@ -63,7 +63,7 @@
         
         _dbCache = [BLDBCache new];
         _dbCache.delegate = self;
-        _cacheCountLimit = 1000;
+        _cacheCountLimit = 500;
         _dbCache.countLimit = _cacheCountLimit;
         _changedObjects = [NSMutableArray array];
         

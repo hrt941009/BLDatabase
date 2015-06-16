@@ -11,16 +11,16 @@
 		C387FDD41B2DACEA00D88EFB /* BLFetchedResultsController.m in Sources */ = {isa = PBXBuildFile; fileRef = C387FDD01B2DACEA00D88EFB /* BLFetchedResultsController.m */; };
 		C387FDD51B2DACEA00D88EFB /* BLFetchRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = C387FDD21B2DACEA00D88EFB /* BLFetchRequest.m */; };
 		C387FDD61B2DACEA00D88EFB /* BLFetchRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = C387FDD21B2DACEA00D88EFB /* BLFetchRequest.m */; };
-		C3EE87621B0C8577001EBCDE /* BLBaseDBObject.m in Sources */ = {isa = PBXBuildFile; fileRef = C3EE87481B0C8577001EBCDE /* BLBaseDBObject.m */; };
-		C3EE87631B0C8577001EBCDE /* BLBaseDBObject.m in Sources */ = {isa = PBXBuildFile; fileRef = C3EE87481B0C8577001EBCDE /* BLBaseDBObject.m */; };
+		C3EE87621B0C8577001EBCDE /* BLBaseDBObject.mm in Sources */ = {isa = PBXBuildFile; fileRef = C3EE87481B0C8577001EBCDE /* BLBaseDBObject.mm */; };
+		C3EE87631B0C8577001EBCDE /* BLBaseDBObject.mm in Sources */ = {isa = PBXBuildFile; fileRef = C3EE87481B0C8577001EBCDE /* BLBaseDBObject.mm */; };
 		C3EE87641B0C8577001EBCDE /* BLDatabase.m in Sources */ = {isa = PBXBuildFile; fileRef = C3EE874B1B0C8577001EBCDE /* BLDatabase.m */; };
 		C3EE87651B0C8577001EBCDE /* BLDatabase.m in Sources */ = {isa = PBXBuildFile; fileRef = C3EE874B1B0C8577001EBCDE /* BLDatabase.m */; };
 		C3EE87661B0C8577001EBCDE /* BLDatabaseConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = C3EE874F1B0C8577001EBCDE /* BLDatabaseConnection.m */; };
 		C3EE87671B0C8577001EBCDE /* BLDatabaseConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = C3EE874F1B0C8577001EBCDE /* BLDatabaseConnection.m */; };
 		C3EE87681B0C8577001EBCDE /* BLDatabaseManager.m in Sources */ = {isa = PBXBuildFile; fileRef = C3EE87511B0C8577001EBCDE /* BLDatabaseManager.m */; };
 		C3EE87691B0C8577001EBCDE /* BLDatabaseManager.m in Sources */ = {isa = PBXBuildFile; fileRef = C3EE87511B0C8577001EBCDE /* BLDatabaseManager.m */; };
-		C3EE876A1B0C8577001EBCDE /* BLDatabaseUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = C3EE87531B0C8577001EBCDE /* BLDatabaseUtil.m */; };
-		C3EE876B1B0C8577001EBCDE /* BLDatabaseUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = C3EE87531B0C8577001EBCDE /* BLDatabaseUtil.m */; };
+		C3EE876A1B0C8577001EBCDE /* BLDatabaseUtil.mm in Sources */ = {isa = PBXBuildFile; fileRef = C3EE87531B0C8577001EBCDE /* BLDatabaseUtil.mm */; };
+		C3EE876B1B0C8577001EBCDE /* BLDatabaseUtil.mm in Sources */ = {isa = PBXBuildFile; fileRef = C3EE87531B0C8577001EBCDE /* BLDatabaseUtil.mm */; };
 		C3EE876C1B0C8577001EBCDE /* BLDBCache.m in Sources */ = {isa = PBXBuildFile; fileRef = C3EE87551B0C8577001EBCDE /* BLDBCache.m */; };
 		C3EE876D1B0C8577001EBCDE /* BLDBCache.m in Sources */ = {isa = PBXBuildFile; fileRef = C3EE87551B0C8577001EBCDE /* BLDBCache.m */; };
 		C3EE876E1B0C8577001EBCDE /* BLDBChangedObject.m in Sources */ = {isa = PBXBuildFile; fileRef = C3EE87571B0C8577001EBCDE /* BLDBChangedObject.m */; };
@@ -81,7 +81,7 @@
 		C3EE87451B0C8577001EBCDE /* BLBaseDBObject+Common.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "BLBaseDBObject+Common.h"; sourceTree = "<group>"; };
 		C3EE87461B0C8577001EBCDE /* BLBaseDBObject+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "BLBaseDBObject+Private.h"; sourceTree = "<group>"; };
 		C3EE87471B0C8577001EBCDE /* BLBaseDBObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BLBaseDBObject.h; sourceTree = "<group>"; };
-		C3EE87481B0C8577001EBCDE /* BLBaseDBObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BLBaseDBObject.m; sourceTree = "<group>"; };
+		C3EE87481B0C8577001EBCDE /* BLBaseDBObject.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = BLBaseDBObject.mm; sourceTree = "<group>"; };
 		C3EE87491B0C8577001EBCDE /* BLDatabase+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "BLDatabase+Private.h"; sourceTree = "<group>"; };
 		C3EE874A1B0C8577001EBCDE /* BLDatabase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BLDatabase.h; sourceTree = "<group>"; };
 		C3EE874B1B0C8577001EBCDE /* BLDatabase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BLDatabase.m; sourceTree = "<group>"; };
@@ -92,7 +92,7 @@
 		C3EE87501B0C8577001EBCDE /* BLDatabaseManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BLDatabaseManager.h; sourceTree = "<group>"; };
 		C3EE87511B0C8577001EBCDE /* BLDatabaseManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BLDatabaseManager.m; sourceTree = "<group>"; };
 		C3EE87521B0C8577001EBCDE /* BLDatabaseUtil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BLDatabaseUtil.h; sourceTree = "<group>"; };
-		C3EE87531B0C8577001EBCDE /* BLDatabaseUtil.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BLDatabaseUtil.m; sourceTree = "<group>"; };
+		C3EE87531B0C8577001EBCDE /* BLDatabaseUtil.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = BLDatabaseUtil.mm; sourceTree = "<group>"; };
 		C3EE87541B0C8577001EBCDE /* BLDBCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BLDBCache.h; sourceTree = "<group>"; };
 		C3EE87551B0C8577001EBCDE /* BLDBCache.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BLDBCache.m; sourceTree = "<group>"; };
 		C3EE87561B0C8577001EBCDE /* BLDBChangedObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BLDBChangedObject.h; sourceTree = "<group>"; };
@@ -173,7 +173,7 @@
 				C3EE87451B0C8577001EBCDE /* BLBaseDBObject+Common.h */,
 				C3EE87461B0C8577001EBCDE /* BLBaseDBObject+Private.h */,
 				C3EE87471B0C8577001EBCDE /* BLBaseDBObject.h */,
-				C3EE87481B0C8577001EBCDE /* BLBaseDBObject.m */,
+				C3EE87481B0C8577001EBCDE /* BLBaseDBObject.mm */,
 				C3EE87491B0C8577001EBCDE /* BLDatabase+Private.h */,
 				C3EE874A1B0C8577001EBCDE /* BLDatabase.h */,
 				C3EE874B1B0C8577001EBCDE /* BLDatabase.m */,
@@ -184,7 +184,7 @@
 				C3EE87501B0C8577001EBCDE /* BLDatabaseManager.h */,
 				C3EE87511B0C8577001EBCDE /* BLDatabaseManager.m */,
 				C3EE87521B0C8577001EBCDE /* BLDatabaseUtil.h */,
-				C3EE87531B0C8577001EBCDE /* BLDatabaseUtil.m */,
+				C3EE87531B0C8577001EBCDE /* BLDatabaseUtil.mm */,
 				C3EE87541B0C8577001EBCDE /* BLDBCache.h */,
 				C3EE87551B0C8577001EBCDE /* BLDBCache.m */,
 				C3EE87561B0C8577001EBCDE /* BLDBChangedObject.h */,
@@ -428,7 +428,7 @@
 				C3FD04161B0ADFCC0049B42E /* BLAccount.m in Sources */,
 				C3FD04081B0ADFA00049B42E /* FMDatabase.m in Sources */,
 				C3FD03981B0ADE7C0049B42E /* ViewController.m in Sources */,
-				C3EE87621B0C8577001EBCDE /* BLBaseDBObject.m in Sources */,
+				C3EE87621B0C8577001EBCDE /* BLBaseDBObject.mm in Sources */,
 				C3EE87661B0C8577001EBCDE /* BLDatabaseConnection.m in Sources */,
 				C3FD040C1B0ADFA00049B42E /* FMDatabasePool.m in Sources */,
 				C3FD04061B0ADFA00049B42E /* FMDatabase+InMemoryOnDiskIO.m in Sources */,
@@ -441,7 +441,7 @@
 				C3EE876E1B0C8577001EBCDE /* BLDBChangedObject.m in Sources */,
 				C3FD040E1B0ADFA00049B42E /* FMDatabaseQueue.m in Sources */,
 				C3EE876C1B0C8577001EBCDE /* BLDBCache.m in Sources */,
-				C3EE876A1B0C8577001EBCDE /* BLDatabaseUtil.m in Sources */,
+				C3EE876A1B0C8577001EBCDE /* BLDatabaseUtil.mm in Sources */,
 				C3FD04021B0ADFA00049B42E /* FMDatabase+FTS3.m in Sources */,
 				C3EE87741B0C8577001EBCDE /* BLNull.m in Sources */,
 				C3EE87641B0C8577001EBCDE /* BLDatabase.m in Sources */,
@@ -462,7 +462,7 @@
 				C3EE87771B0C8577001EBCDE /* FMDatabase+Hook.m in Sources */,
 				C3FD040F1B0ADFA00049B42E /* FMDatabaseQueue.m in Sources */,
 				C3FD04191B0ADFCC0049B42E /* BLTestObject.m in Sources */,
-				C3EE87631B0C8577001EBCDE /* BLBaseDBObject.m in Sources */,
+				C3EE87631B0C8577001EBCDE /* BLBaseDBObject.mm in Sources */,
 				C3FD04091B0ADFA00049B42E /* FMDatabase.m in Sources */,
 				C3FD04211B0AE5E70049B42E /* BLStoreManager.m in Sources */,
 				C3FD040B1B0ADFA00049B42E /* FMDatabaseAdditions.m in Sources */,
@@ -473,7 +473,7 @@
 				C3FD04111B0ADFA00049B42E /* FMResultSet.m in Sources */,
 				C3EE876D1B0C8577001EBCDE /* BLDBCache.m in Sources */,
 				C3FD04031B0ADFA00049B42E /* FMDatabase+FTS3.m in Sources */,
-				C3EE876B1B0C8577001EBCDE /* BLDatabaseUtil.m in Sources */,
+				C3EE876B1B0C8577001EBCDE /* BLDatabaseUtil.mm in Sources */,
 				C387FDD61B2DACEA00D88EFB /* BLFetchRequest.m in Sources */,
 				C3FD04071B0ADFA00049B42E /* FMDatabase+InMemoryOnDiskIO.m in Sources */,
 				C3EE87751B0C8577001EBCDE /* BLNull.m in Sources */,

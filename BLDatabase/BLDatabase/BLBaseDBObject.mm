@@ -363,28 +363,28 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
         
         // 添加父类的字段
         cls = [self superclass];
-        while (cls != [NSObject class]) {
+        if (cls != [NSObject class]) {
             NSString *className = NSStringFromClass(cls);
             [databaseInfo addEntriesFromDictionary:g_database_fieldInfo[className]];
             cls = [cls superclass];
         }
         
         cls = [self superclass];
-        while (cls != [NSObject class]) {
+        if (cls != [NSObject class]) {
             NSString *className = NSStringFromClass(cls);
             [propertyNameInfo addEntriesFromDictionary:g_propertyName_fieldInfo[className]];
             cls = [cls superclass];
         }
         
         cls = [self superclass];
-        while (cls != [NSObject class]) {
+        if (cls != [NSObject class]) {
             NSString *className = NSStringFromClass(cls);
             [getterNameInfo addEntriesFromDictionary:g_getterName_fieldInfo[className]];
             cls = [cls superclass];
         }
         
         cls = [self superclass];
-        while (cls != [NSObject class]) {
+        if (cls != [NSObject class]) {
             NSString *className = NSStringFromClass(cls);
             [setterNameInfo addEntriesFromDictionary:g_setterName_fieldInfo[className]];
             cls = [cls superclass];
@@ -2373,7 +2373,7 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
         NSString *uniqueId = [changedObject uniqueId];
         NSDictionary *info = [changedObjectsMapping valueForKey:uniqueId];
         NSInteger oldIndex = [info[@"index"] integerValue];
-        BLDBChangedObjectType oldType = [info[@"type"] integerValue];
+        int oldType = [info[@"type"] intValue];
         
         if (info) {
             switch (changedObject.type) {
@@ -2503,6 +2503,7 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
     [connection validateRead];
     void(^block)(void) = ^(void) {
         if (self.isFault) {
+            [_connection validateRead];
             NSMutableSet *databaseFieldNames = [NSMutableSet setWithArray:[[self class] databaseFieldNames]];
             [databaseFieldNames minusSet:[self preloadFieldNames]];
             
@@ -2542,7 +2543,7 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
                         id objectValue = [resultSet objectForColumnIndex:columnIdx];
                         
                         if (objectValue && objectValue != [NSNull null]) {
-                            BLBaseDBObjectFieldType fieldType = fieldTypes[columnIdx];
+                            int fieldType = fieldTypes[columnIdx];
                             if (fieldType == BLBaseDBObjectFieldTypeDate) {
                                 objectValue = [NSDate dateWithTimeIntervalSince1970:[objectValue doubleValue]];
                             } else if (fieldType == BLBaseDBObjectFieldTypeArray) {
@@ -2895,7 +2896,7 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
                     
                     id objectValue = [resultSet objectForColumnIndex:columnIdx];
                     if (objectValue && objectValue != [NSNull null]) {
-                        BLBaseDBObjectFieldType fieldType = fieldTypes[columnIdx];
+                        int fieldType = fieldTypes[columnIdx];
                         if (fieldType == BLBaseDBObjectFieldTypeDate) {
                             objectValue = [NSDate dateWithTimeIntervalSince1970:[objectValue doubleValue]];
                         } else if (fieldType == BLBaseDBObjectFieldTypeArray) {
@@ -2919,7 +2920,6 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
             }
             [object setValue:value forKey:key];
         }
-        
         
         object.enableFullLoadIfFault = YES;
         object.isFault = isFault;
