@@ -21,6 +21,54 @@
 
 #import <objc/runtime.h>
 #import <objc/message.h>
+#include <set>
+#include <unordered_map>
+#include <functional>
+#include <string>
+
+inline size_t __stl_hash_string(const char* __s)
+{
+    unsigned long __h = 0;
+    for ( ; *__s; ++__s)
+        __h = 5*__h + *__s;
+    
+    return size_t(__h);
+}
+
+struct CharHash
+{
+    size_t operator()(const char* __s) const { return __stl_hash_string(__s); }
+};
+
+
+struct CharhashConst
+{
+    inline size_t operator()(const char* __s) const {
+        return __stl_hash_string(__s);
+    }
+};
+
+struct MyHash {
+    inline std::size_t operator() (const NSString * obj) const {
+        return [obj hash];
+    }
+};
+
+struct CharEqual {
+    inline bool operator() (const char* s1, const char* s2) const {
+        return strcmp(s1, s2) == 0;
+    }
+};
+
+//struct MyClassHash {
+//    
+//};
+
+//struct ClassEqual {
+//    inline bool operator() (__unsafe_unretained Class s1, __unsafe_unretained Class s2) const {
+//        return s1 == s2;
+//    }
+//};
 
 NSString * const BLDatabaseInsertKey = @"BLDatabaseInsertKey";
 NSString * const BLDatabaseUpdateKey = @"BLDatabaseUpdateKey";
@@ -29,10 +77,19 @@ NSString * const BLDatabaseDeleteKey = @"BLDatabaseDeleteKey";
 NSString * const BLDatabaseChangedNotification = @"BLBaseDBObjectChangedNotification";
 
 static dispatch_queue_t globalQueue = nil;
-static NSMutableDictionary *g_database_fieldInfo = NULL;
-static NSMutableDictionary *g_propertyName_fieldInfo = nil;
-static NSMutableDictionary *g_setterName_fieldInfo = nil;
-static NSMutableDictionary *g_getterName_fieldInfo = nil;
+//static NSMutableDictionary *g_database_fieldInfo = NULL;
+//static NSMutableDictionary *g_propertyName_fieldInfo = nil;
+
+//static NSMutableDictionary *g_setterName_fieldInfo = nil;
+//static NSMutableDictionary *g_getterName_fieldInfo = nil;
+
+typedef std::unordered_map<const char *, BLBaseDBObjectFieldInfo *, CharhashConst, CharEqual> innerUnorderedMap;
+
+std::unordered_map<Class, NSDictionary *> g_database_map;
+std::unordered_map<Class, NSDictionary *> g_propertyName_map;
+std::unordered_map<Class, innerUnorderedMap> g_setterName_map;
+std::unordered_map<Class, innerUnorderedMap> g_getterName_map;
+
 
 @interface BLBaseDBObjectFieldInfo ()
 {
@@ -55,9 +112,14 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
 
 @interface BLBaseDBObject ()
 {
-    __weak      NSDictionary *fieldInfoForSetters;
-    __weak      NSDictionary *fieldInfoForGetters;
+    //__weak      NSDictionary *fieldInfoForSetters;
+    //__weak      NSDictionary *fieldInfoForGetters;
+    
+    innerUnorderedMap        *setterNameMap;
+    innerUnorderedMap        *getterNameMap;
+    
     __weak      NSDictionary *fieldInfoForDatabase;
+    __weak      NSDictionary *fieldInfoForPropertyName;
 }
 
 @property (nonatomic, weak) BLDatabaseConnection *connection;
@@ -98,27 +160,41 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
         Class cls = [self class];
         __unused NSString *className = NSStringFromClass(cls);
         BLLogDebug(@"class Name = %@", className);
-        if (g_propertyName_fieldInfo[className]) {
-            return ;
-        }
-        
-        if (!g_database_fieldInfo) {
-            g_database_fieldInfo = [NSMutableDictionary dictionary];
-        }
-        if (!g_propertyName_fieldInfo) {
-            g_propertyName_fieldInfo = [NSMutableDictionary dictionary];
-        }
-        if (!g_setterName_fieldInfo) {
-            g_setterName_fieldInfo = [NSMutableDictionary dictionary];
-        }
-        if (!g_getterName_fieldInfo) {
-            g_getterName_fieldInfo = [NSMutableDictionary dictionary];
-        }
         
         NSMutableDictionary *databaseInfo = [NSMutableDictionary dictionary];
         NSMutableDictionary *propertyNameInfo = [NSMutableDictionary dictionary];
-        NSMutableDictionary *getterNameInfo = [NSMutableDictionary dictionary];
-        NSMutableDictionary *setterNameInfo = [NSMutableDictionary dictionary];
+        //NSMutableDictionary *getterNameInfo = [NSMutableDictionary dictionary];
+        //NSMutableDictionary *setterNameInfo = [NSMutableDictionary dictionary];
+        innerUnorderedMap getterNameMap;
+        innerUnorderedMap setterNameMap;
+        
+        Class superClass = [self superclass];
+        if (superClass != [NSObject class]) {
+            NSDictionary *info = g_database_map[superClass];
+            [databaseInfo addEntriesFromDictionary:info];
+        }
+        
+        if (superClass != [NSObject class]) {
+            NSDictionary *info = g_propertyName_map[superClass];
+            [propertyNameInfo addEntriesFromDictionary:info];
+        }
+        
+        if (superClass != [NSObject class]) {
+            innerUnorderedMap tempMap = g_setterName_map[superClass];
+            setterNameMap = tempMap;
+        }
+        
+        if (superClass != [NSObject class]) {
+            innerUnorderedMap tempMap = g_getterName_map[superClass];
+            getterNameMap = tempMap;
+            /*
+             innerUnorderedMap::iterator iter = tempMap.begin();
+             while (iter != tempMap.end()) {
+             getterNameMap[iter->first] = iter->second;
+             ++ iter;
+             }
+             */
+        }
         
         NSDictionary *defaultValues = [self defaultValues];
         NSArray *indexFieldNames = [self indexFieldNames];
@@ -325,8 +401,13 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
                         [databaseInfo setValue:info forKey:propertyName];
                     }
                     [propertyNameInfo setValue:info forKey:propertyName];
-                    [getterNameInfo setValue:info forKey:getterName];
-                    [setterNameInfo setValue:info forKey:setterName];
+                    //[getterNameInfo setValue:info forKey:getterName];
+                    //[setterNameInfo setValue:info forKey:setterName];
+                    
+                    char *dupGetterName = strdup([getterName cStringUsingEncoding:NSUTF8StringEncoding]);
+                    char *dupSetterName = strdup([setterName cStringUsingEncoding:NSUTF8StringEncoding]);
+                    getterNameMap[dupGetterName] = info;
+                    setterNameMap[dupSetterName] = info;
                     
                     if (hookGetter && hookSetter) {
                         NSString *oldGetterName = [@"old" stringByAppendingString:[self firstLetterToUpperWithString:getterName]];
@@ -361,39 +442,15 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
         }
         free(properties);
         
-        // 添加父类的字段
-        cls = [self superclass];
-        if (cls != [NSObject class]) {
-            NSString *className = NSStringFromClass(cls);
-            [databaseInfo addEntriesFromDictionary:g_database_fieldInfo[className]];
-            cls = [cls superclass];
-        }
+        //[g_database_fieldInfo setValue:databaseInfo forKey:className];
+        //[g_propertyName_fieldInfo setValue:propertyNameInfo forKey:className];
+        //[g_setterName_fieldInfo setValue:setterNameInfo forKey:className];
+        //[g_getterName_fieldInfo setValue:getterNameInfo forKey:className];
         
-        cls = [self superclass];
-        if (cls != [NSObject class]) {
-            NSString *className = NSStringFromClass(cls);
-            [propertyNameInfo addEntriesFromDictionary:g_propertyName_fieldInfo[className]];
-            cls = [cls superclass];
-        }
-        
-        cls = [self superclass];
-        if (cls != [NSObject class]) {
-            NSString *className = NSStringFromClass(cls);
-            [getterNameInfo addEntriesFromDictionary:g_getterName_fieldInfo[className]];
-            cls = [cls superclass];
-        }
-        
-        cls = [self superclass];
-        if (cls != [NSObject class]) {
-            NSString *className = NSStringFromClass(cls);
-            [setterNameInfo addEntriesFromDictionary:g_setterName_fieldInfo[className]];
-            cls = [cls superclass];
-        }
-        
-        [g_database_fieldInfo setValue:databaseInfo forKey:className];
-        [g_propertyName_fieldInfo setValue:propertyNameInfo forKey:className];
-        [g_getterName_fieldInfo setValue:getterNameInfo forKey:className];
-        [g_setterName_fieldInfo setValue:setterNameInfo forKey:className];
+        g_database_map[cls] = databaseInfo;
+        g_propertyName_map[cls] = propertyNameInfo;
+        g_setterName_map[cls] = setterNameMap;
+        g_getterName_map[cls] = getterNameMap;
     });
 }
 
@@ -487,32 +544,19 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
 
 + (NSArray *)databaseFieldNames
 {
-    NSString *className = NSStringFromClass([self class]);
-    
-    return [g_database_fieldInfo[className] allKeys];
+    return [g_database_map[[self class]] allKeys];
 }
 
 + (BLBaseDBObjectFieldInfo *)infoForFieldName:(NSString *)fieldName
 {
-    NSString *className = NSStringFromClass([self class]);
-    
-    return g_database_fieldInfo[className][fieldName];
+    return g_database_map[[self class]][fieldName];
 }
 
 #pragma mark - hook getter
 
 - (id)hookGetterForRelationship
 {
-    NSString *seletorName = NSStringFromSelector(_cmd);
-    if (!self->fieldInfoForGetters) {
-        NSString *className = NSStringFromClass([self class]);
-        self->fieldInfoForGetters = g_getterName_fieldInfo[className];
-    }
-    BLBaseDBObjectFieldInfo *fieldInfo = self->fieldInfoForGetters[seletorName];
-    if (!fieldInfo.propertyName) {
-        BLLogError(@"propertyName is nil for seletorName = %@", seletorName);
-        assert(false);
-    }
+    BLBaseDBObjectFieldInfo *fieldInfo = [self fieldInfoWithHookGetterSelector:_cmd shouldCheckFault:NO];
     
     // 找个关系对象对应的id字段名
     NSString *reflectionPropertyName = [[self class] reflectionNameToOneWithPropertyName:fieldInfo.propertyName];
@@ -537,16 +581,7 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
 
 - (id)hookGetterForRelationships
 {
-    NSString *seletorName = NSStringFromSelector(_cmd);
-    if (!self->fieldInfoForGetters) {
-        NSString *className = NSStringFromClass([self class]);
-        self->fieldInfoForGetters = g_getterName_fieldInfo[className];
-    }
-    BLBaseDBObjectFieldInfo *fieldInfo = self->fieldInfoForGetters[seletorName];
-    if (!fieldInfo.propertyName) {
-        BLLogError(@"propertyName is nil for selectorName = %@", seletorName);
-        assert(false);
-    }
+    BLBaseDBObjectFieldInfo *fieldInfo = [self fieldInfoWithHookGetterSelector:_cmd shouldCheckFault:NO];
     
     // 找个关系对象对应的id字段名
     NSString *reflectionPropertyName = [[self class] reflectionNameToManyWithPropertyName:fieldInfo.propertyName];
@@ -581,12 +616,28 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
     }
 }
 
-- (void)loadFaultIfNeededWithGetSelectorName:(NSString *)seletorName
+//- (void)loadFaultIfNeededWithGetSelectorName:(NSString *)seletorName
+//                                   fieldInfo:(BLBaseDBObjectFieldInfo *)fieldInfo
+//{
+//    if (self.enableFullLoadIfFault && self.isFault) {
+//        if (!fieldInfo.propertyName) {
+//            BLLogError(@"propertyName is nil for seletorName = %@", seletorName);
+//            assert(false);
+//        }
+//        
+//        // fault对象且当前访问的属性不是预加载属性 则从db读取数据
+//        if (![self.preloadFieldNames containsObject:fieldInfo.propertyName]) {
+//            [self loadFaultInConnection:_connection];
+//        }
+//    }
+//}
+
+- (void)loadFaultIfNeededWithGetSelectorName:(const char *)seletorName
                                    fieldInfo:(BLBaseDBObjectFieldInfo *)fieldInfo
 {
     if (self.enableFullLoadIfFault && self.isFault) {
         if (!fieldInfo.propertyName) {
-            BLLogError(@"propertyName is nil for seletorName = %@", seletorName);
+            BLLogError(@"propertyName is nil for seletorName = %s", seletorName);
             assert(false);
         }
         
@@ -597,15 +648,32 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
     }
 }
 
+- (BLBaseDBObjectFieldInfo *)fieldInfoWithHookGetterSelector:(SEL)selector shouldCheckFault:(BOOL)shouldCheckFault
+{
+    const char *name = sel_getName(selector);
+    if (!getterNameMap) {
+        getterNameMap = &g_getterName_map[[self class]];
+    }
+    
+    __unsafe_unretained BLBaseDBObjectFieldInfo *fieldInfo = (*getterNameMap)[name];
+    if (shouldCheckFault) {
+        [self loadFaultIfNeededWithGetSelectorName:name fieldInfo:fieldInfo];
+    }
+    
+    //    NSString *seletorName = NSStringFromSelector(_cmd);
+    //    if (!self->fieldInfoForGetters) {
+    //        NSString *className = NSStringFromClass([self class]);
+    //        self->fieldInfoForGetters = g_getterName_fieldInfo[className];
+    //    }
+    //    BLBaseDBObjectFieldInfo *fieldInfo = self->fieldInfoForGetters[seletorName];
+    //    [self loadFaultIfNeededWithGetSelectorName:seletorName fieldInfo:fieldInfo];
+    
+    return fieldInfo;
+}
+
 - (id)hookGetterForObjcType
 {
-    NSString *seletorName = NSStringFromSelector(_cmd);
-    if (!self->fieldInfoForGetters) {
-        NSString *className = NSStringFromClass([self class]);
-        self->fieldInfoForGetters = g_getterName_fieldInfo[className];
-    }
-    BLBaseDBObjectFieldInfo *fieldInfo = self->fieldInfoForGetters[seletorName];
-    [self loadFaultIfNeededWithGetSelectorName:seletorName fieldInfo:fieldInfo];
+    BLBaseDBObjectFieldInfo *fieldInfo = [self fieldInfoWithHookGetterSelector:_cmd shouldCheckFault:YES];
     
     //BLLogDebug(@"getter %@", seletorName);
     
@@ -614,13 +682,7 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
 
 - (int)hookGetterForIntType
 {
-    NSString *seletorName = NSStringFromSelector(_cmd);
-    if (!self->fieldInfoForGetters) {
-        NSString *className = NSStringFromClass([self class]);
-        self->fieldInfoForGetters = g_getterName_fieldInfo[className];
-    }
-    BLBaseDBObjectFieldInfo *fieldInfo = self->fieldInfoForGetters[seletorName];
-    [self loadFaultIfNeededWithGetSelectorName:seletorName fieldInfo:fieldInfo];
+    BLBaseDBObjectFieldInfo *fieldInfo = [self fieldInfoWithHookGetterSelector:_cmd shouldCheckFault:YES];
     
     //BLLogDebug(@"getter %@", seletorName);
     
@@ -629,13 +691,7 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
 
 - (short)hookGetterForShortType
 {
-    NSString *seletorName = NSStringFromSelector(_cmd);
-    if (!self->fieldInfoForGetters) {
-        NSString *className = NSStringFromClass([self class]);
-        self->fieldInfoForGetters = g_getterName_fieldInfo[className];
-    }
-    BLBaseDBObjectFieldInfo *fieldInfo = self->fieldInfoForGetters[seletorName];
-    [self loadFaultIfNeededWithGetSelectorName:seletorName fieldInfo:fieldInfo];
+    BLBaseDBObjectFieldInfo *fieldInfo = [self fieldInfoWithHookGetterSelector:_cmd shouldCheckFault:YES];
     
     //BLLogDebug(@"getter %@", seletorName);
     
@@ -644,13 +700,7 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
 
 - (long)hookGetterForLongType
 {
-    NSString *seletorName = NSStringFromSelector(_cmd);
-    if (!self->fieldInfoForGetters) {
-        NSString *className = NSStringFromClass([self class]);
-        self->fieldInfoForGetters = g_getterName_fieldInfo[className];
-    }
-    BLBaseDBObjectFieldInfo *fieldInfo = self->fieldInfoForGetters[seletorName];
-    [self loadFaultIfNeededWithGetSelectorName:seletorName fieldInfo:fieldInfo];
+    BLBaseDBObjectFieldInfo *fieldInfo = [self fieldInfoWithHookGetterSelector:_cmd shouldCheckFault:YES];
     
     //BLLogDebug(@"getter %@", seletorName);
     
@@ -659,13 +709,7 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
 
 - (long long)hookGetterForLongLongType
 {
-    NSString *seletorName = NSStringFromSelector(_cmd);
-    if (!self->fieldInfoForGetters) {
-        NSString *className = NSStringFromClass([self class]);
-        self->fieldInfoForGetters = g_getterName_fieldInfo[className];
-    }
-    BLBaseDBObjectFieldInfo *fieldInfo = self->fieldInfoForGetters[seletorName];
-    [self loadFaultIfNeededWithGetSelectorName:seletorName fieldInfo:fieldInfo];
+    BLBaseDBObjectFieldInfo *fieldInfo = [self fieldInfoWithHookGetterSelector:_cmd shouldCheckFault:YES];
     
     //BLLogDebug(@"getter %@", seletorName);
     
@@ -674,13 +718,7 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
 
 - (char)hookGetterForCharType
 {
-    NSString *seletorName = NSStringFromSelector(_cmd);
-    if (!self->fieldInfoForGetters) {
-        NSString *className = NSStringFromClass([self class]);
-        self->fieldInfoForGetters = g_getterName_fieldInfo[className];
-    }
-    BLBaseDBObjectFieldInfo *fieldInfo = self->fieldInfoForGetters[seletorName];
-    [self loadFaultIfNeededWithGetSelectorName:seletorName fieldInfo:fieldInfo];
+    BLBaseDBObjectFieldInfo *fieldInfo = [self fieldInfoWithHookGetterSelector:_cmd shouldCheckFault:YES];
     
     //BLLogDebug(@"getter %@", seletorName);
     
@@ -689,13 +727,7 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
 
 - (unsigned char)hookGetterForUnsignedCharType
 {
-    NSString *seletorName = NSStringFromSelector(_cmd);
-    if (!self->fieldInfoForGetters) {
-        NSString *className = NSStringFromClass([self class]);
-        self->fieldInfoForGetters = g_getterName_fieldInfo[className];
-    }
-    BLBaseDBObjectFieldInfo *fieldInfo = self->fieldInfoForGetters[seletorName];
-    [self loadFaultIfNeededWithGetSelectorName:seletorName fieldInfo:fieldInfo];
+    BLBaseDBObjectFieldInfo *fieldInfo = [self fieldInfoWithHookGetterSelector:_cmd shouldCheckFault:YES];
     
     //BLLogDebug(@"getter %@", seletorName);
     
@@ -704,13 +736,7 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
 
 - (unsigned int)hookGetterForUnsignedIntType
 {
-    NSString *seletorName = NSStringFromSelector(_cmd);
-    if (!self->fieldInfoForGetters) {
-        NSString *className = NSStringFromClass([self class]);
-        self->fieldInfoForGetters = g_getterName_fieldInfo[className];
-    }
-    BLBaseDBObjectFieldInfo *fieldInfo = self->fieldInfoForGetters[seletorName];
-    [self loadFaultIfNeededWithGetSelectorName:seletorName fieldInfo:fieldInfo];
+    BLBaseDBObjectFieldInfo *fieldInfo = [self fieldInfoWithHookGetterSelector:_cmd shouldCheckFault:YES];
     
     //BLLogDebug(@"getter %@", seletorName);
     
@@ -719,13 +745,7 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
 
 - (unsigned short)hookGetterForUnsignedShortType
 {
-    NSString *seletorName = NSStringFromSelector(_cmd);
-    if (!self->fieldInfoForGetters) {
-        NSString *className = NSStringFromClass([self class]);
-        self->fieldInfoForGetters = g_getterName_fieldInfo[className];
-    }
-    BLBaseDBObjectFieldInfo *fieldInfo = self->fieldInfoForGetters[seletorName];
-    [self loadFaultIfNeededWithGetSelectorName:seletorName fieldInfo:fieldInfo];
+    BLBaseDBObjectFieldInfo *fieldInfo = [self fieldInfoWithHookGetterSelector:_cmd shouldCheckFault:YES];
     
     //BLLogDebug(@"getter %@", seletorName);
     
@@ -734,13 +754,7 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
 
 - (unsigned long)hookGetterForUnsignedLongType
 {
-    NSString *seletorName = NSStringFromSelector(_cmd);
-    if (!self->fieldInfoForGetters) {
-        NSString *className = NSStringFromClass([self class]);
-        self->fieldInfoForGetters = g_getterName_fieldInfo[className];
-    }
-    BLBaseDBObjectFieldInfo *fieldInfo = self->fieldInfoForGetters[seletorName];
-    [self loadFaultIfNeededWithGetSelectorName:seletorName fieldInfo:fieldInfo];
+    BLBaseDBObjectFieldInfo *fieldInfo = [self fieldInfoWithHookGetterSelector:_cmd shouldCheckFault:YES];
     
     //BLLogDebug(@"getter %@", seletorName);
     
@@ -749,13 +763,7 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
 
 - (unsigned long long)hookGetterForUnsignedLongLongType
 {
-    NSString *seletorName = NSStringFromSelector(_cmd);
-    if (!self->fieldInfoForGetters) {
-        NSString *className = NSStringFromClass([self class]);
-        self->fieldInfoForGetters = g_getterName_fieldInfo[className];
-    }
-    BLBaseDBObjectFieldInfo *fieldInfo = self->fieldInfoForGetters[seletorName];
-    [self loadFaultIfNeededWithGetSelectorName:seletorName fieldInfo:fieldInfo];
+    BLBaseDBObjectFieldInfo *fieldInfo = [self fieldInfoWithHookGetterSelector:_cmd shouldCheckFault:YES];
     
     //BLLogDebug(@"getter %@", seletorName);
     
@@ -764,13 +772,7 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
 
 - (float)hookGetterForFloatType
 {
-    NSString *seletorName = NSStringFromSelector(_cmd);
-    if (!self->fieldInfoForGetters) {
-        NSString *className = NSStringFromClass([self class]);
-        self->fieldInfoForGetters = g_getterName_fieldInfo[className];
-    }
-    BLBaseDBObjectFieldInfo *fieldInfo = self->fieldInfoForGetters[seletorName];
-    [self loadFaultIfNeededWithGetSelectorName:seletorName fieldInfo:fieldInfo];
+    BLBaseDBObjectFieldInfo *fieldInfo = [self fieldInfoWithHookGetterSelector:_cmd shouldCheckFault:YES];
     
     //BLLogDebug(@"getter %@", seletorName);
     
@@ -779,13 +781,7 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
 
 - (double)hookGetterForDoubleType
 {
-    NSString *seletorName = NSStringFromSelector(_cmd);
-    if (!self->fieldInfoForGetters) {
-        NSString *className = NSStringFromClass([self class]);
-        self->fieldInfoForGetters = g_getterName_fieldInfo[className];
-    }
-    BLBaseDBObjectFieldInfo *fieldInfo = self->fieldInfoForGetters[seletorName];
-    [self loadFaultIfNeededWithGetSelectorName:seletorName fieldInfo:fieldInfo];
+    BLBaseDBObjectFieldInfo *fieldInfo = [self fieldInfoWithHookGetterSelector:_cmd shouldCheckFault:YES];
     
     //BLLogDebug(@"getter %@", seletorName);
     
@@ -794,13 +790,7 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
 
 - (bool)hookGetterForBoolType
 {
-    NSString *seletorName = NSStringFromSelector(_cmd);
-    if (!self->fieldInfoForGetters) {
-        NSString *className = NSStringFromClass([self class]);
-        self->fieldInfoForGetters = g_getterName_fieldInfo[className];
-    }
-    BLBaseDBObjectFieldInfo *fieldInfo = self->fieldInfoForGetters[seletorName];
-    [self loadFaultIfNeededWithGetSelectorName:seletorName fieldInfo:fieldInfo];
+    BLBaseDBObjectFieldInfo *fieldInfo = [self fieldInfoWithHookGetterSelector:_cmd shouldCheckFault:YES];
     
     //BLLogDebug(@"getter %@", seletorName);
     
@@ -811,16 +801,7 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
 
 - (void)hookSetterForRelationship:(id)value
 {
-    NSString *seletorName = NSStringFromSelector(_cmd);
-    if (!self->fieldInfoForSetters) {
-        NSString *className = NSStringFromClass([self class]);
-        self->fieldInfoForSetters = g_setterName_fieldInfo[className];
-    }
-    BLBaseDBObjectFieldInfo *fieldInfo = self->fieldInfoForSetters[seletorName];
-    if (!fieldInfo.propertyName) {
-        BLLogError(@"propertyName is nil for seletorName = %@", seletorName);
-        assert(false);
-    }
+    BLBaseDBObjectFieldInfo *fieldInfo = [self fieldInfoWithHookSetterSelector:_cmd shouldCheckFault:NO];
     
     // 找个关系对象对应的id字段名
     NSString *reflectionPropertyName = [[self class] reflectionNameToOneWithPropertyName:fieldInfo.propertyName];
@@ -831,16 +812,7 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
 
 - (void)hookSetterForRelationships:(id)value
 {
-    NSString *seletorName = NSStringFromSelector(_cmd);
-    if (!self->fieldInfoForSetters) {
-        NSString *className = NSStringFromClass([self class]);
-        self->fieldInfoForSetters = g_setterName_fieldInfo[className];
-    }
-    BLBaseDBObjectFieldInfo *fieldInfo = self->fieldInfoForSetters[seletorName];
-    if (!fieldInfo.propertyName) {
-        BLLogError(@"propertyName is nil for seletorName = %@", seletorName);
-        assert(false);
-    }
+    BLBaseDBObjectFieldInfo *fieldInfo = [self fieldInfoWithHookSetterSelector:_cmd shouldCheckFault:NO];
     
     // 找个关系对象对应的id字段名
     NSString *reflectionPropertyName = [[self class] reflectionNameToManyWithPropertyName:fieldInfo.propertyName];
@@ -856,11 +828,29 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
     }
 }
 
-- (void)loadFaultIfNeededWithSetSelectorName:(NSString *)seletorName
+//- (void)loadFaultIfNeededWithSetSelectorName:(NSString *)seletorName
+//                                   fieldInfo:(BLBaseDBObjectFieldInfo *)fieldInfo
+//{
+//    if (!fieldInfo.propertyName) {
+//        BLLogError(@"propertyName is nil for seletorName = %@", seletorName);
+//        assert(false);
+//    }
+//    
+//    if (self.enableFullLoadIfFault && self.isFault) {
+//        // fault对象且当前访问的属性不是预加载属性 则从db读取数据
+//        [self loadFaultInConnection:_connection];
+//    }
+//    
+//    if (!self.isFault && self.enableFullLoadIfFault) {
+//        [_changedFieldNames addObject:fieldInfo.propertyName];
+//    }
+//}
+
+- (void)loadFaultIfNeededWithSetSelectorName:(const char *)seletorName
                                    fieldInfo:(BLBaseDBObjectFieldInfo *)fieldInfo
 {
     if (!fieldInfo.propertyName) {
-        BLLogError(@"propertyName is nil for seletorName = %@", seletorName);
+        BLLogError(@"propertyName is nil for seletorName = %s", seletorName);
         assert(false);
     }
     
@@ -874,15 +864,32 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
     }
 }
 
+- (BLBaseDBObjectFieldInfo *)fieldInfoWithHookSetterSelector:(SEL)selector shouldCheckFault:(BOOL)shouldCheckFault
+{
+    const char *name = sel_getName(selector);
+    if (!setterNameMap) {
+        setterNameMap = &g_setterName_map[[self class]];
+    }
+    
+    __unsafe_unretained BLBaseDBObjectFieldInfo *fieldInfo = (*setterNameMap)[name];
+    if (shouldCheckFault) {
+        [self loadFaultIfNeededWithSetSelectorName:name fieldInfo:fieldInfo];
+    }
+    
+    //    NSString *seletorName = NSStringFromSelector(_cmd);
+    //    if (!self->fieldInfoForSetters) {
+    //        NSString *className = NSStringFromClass([self class]);
+    //        self->fieldInfoForSetters = g_setterName_fieldInfo[className];
+    //    }
+    //    BLBaseDBObjectFieldInfo *fieldInfo = self->fieldInfoForSetters[seletorName];
+    //    [self loadFaultIfNeededWithSetSelectorName:seletorName fieldInfo:fieldInfo];
+    
+    return fieldInfo;
+}
+
 - (void)hookSetterForObjcType:(id)value
 {
-    NSString *seletorName = NSStringFromSelector(_cmd);
-    if (!self->fieldInfoForSetters) {
-        NSString *className = NSStringFromClass([self class]);
-        self->fieldInfoForSetters = g_setterName_fieldInfo[className];
-    }
-    BLBaseDBObjectFieldInfo *fieldInfo = self->fieldInfoForSetters[seletorName];
-    [self loadFaultIfNeededWithSetSelectorName:seletorName fieldInfo:fieldInfo];
+    BLBaseDBObjectFieldInfo *fieldInfo = [self fieldInfoWithHookSetterSelector:_cmd shouldCheckFault:YES];
     
     //BLLogDebug(@"setter %@", seletorName);
     
@@ -894,13 +901,7 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
 
 - (void)hookSetterForIntType:(int)value
 {
-    NSString *seletorName = NSStringFromSelector(_cmd);
-    if (!self->fieldInfoForSetters) {
-        NSString *className = NSStringFromClass([self class]);
-        self->fieldInfoForSetters = g_setterName_fieldInfo[className];
-    }
-    BLBaseDBObjectFieldInfo *fieldInfo = self->fieldInfoForSetters[seletorName];
-    [self loadFaultIfNeededWithSetSelectorName:seletorName fieldInfo:fieldInfo];
+    BLBaseDBObjectFieldInfo *fieldInfo = [self fieldInfoWithHookSetterSelector:_cmd shouldCheckFault:YES];
     
     //BLLogDebug(@"setter %@", seletorName);
     
@@ -912,13 +913,7 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
 
 - (void)hookSetterForShortType:(short)value
 {
-    NSString *seletorName = NSStringFromSelector(_cmd);
-    if (!self->fieldInfoForSetters) {
-        NSString *className = NSStringFromClass([self class]);
-        self->fieldInfoForSetters = g_setterName_fieldInfo[className];
-    }
-    BLBaseDBObjectFieldInfo *fieldInfo = self->fieldInfoForSetters[seletorName];
-    [self loadFaultIfNeededWithSetSelectorName:seletorName fieldInfo:fieldInfo];
+    BLBaseDBObjectFieldInfo *fieldInfo = [self fieldInfoWithHookSetterSelector:_cmd shouldCheckFault:YES];
     
     //BLLogDebug(@"setter %@", seletorName);
     
@@ -930,13 +925,7 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
 
 - (void)hookSetterForLongType:(long)value
 {
-    NSString *seletorName = NSStringFromSelector(_cmd);
-    if (!self->fieldInfoForSetters) {
-        NSString *className = NSStringFromClass([self class]);
-        self->fieldInfoForSetters = g_setterName_fieldInfo[className];
-    }
-    BLBaseDBObjectFieldInfo *fieldInfo = self->fieldInfoForSetters[seletorName];
-    [self loadFaultIfNeededWithSetSelectorName:seletorName fieldInfo:fieldInfo];
+    BLBaseDBObjectFieldInfo *fieldInfo = [self fieldInfoWithHookSetterSelector:_cmd shouldCheckFault:YES];
     
     //BLLogDebug(@"setter %@", seletorName);
     
@@ -948,13 +937,7 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
 
 - (void)hookSetterForLongLongType:(long long)value
 {
-    NSString *seletorName = NSStringFromSelector(_cmd);
-    if (!self->fieldInfoForSetters) {
-        NSString *className = NSStringFromClass([self class]);
-        self->fieldInfoForSetters = g_setterName_fieldInfo[className];
-    }
-    BLBaseDBObjectFieldInfo *fieldInfo = self->fieldInfoForSetters[seletorName];
-    [self loadFaultIfNeededWithSetSelectorName:seletorName fieldInfo:fieldInfo];
+    BLBaseDBObjectFieldInfo *fieldInfo = [self fieldInfoWithHookSetterSelector:_cmd shouldCheckFault:YES];
     
     //BLLogDebug(@"setter %@", seletorName);
     
@@ -966,13 +949,7 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
 
 - (void)hookSetterForCharType:(char)value
 {
-    NSString *seletorName = NSStringFromSelector(_cmd);
-    if (!self->fieldInfoForSetters) {
-        NSString *className = NSStringFromClass([self class]);
-        self->fieldInfoForSetters = g_setterName_fieldInfo[className];
-    }
-    BLBaseDBObjectFieldInfo *fieldInfo = self->fieldInfoForSetters[seletorName];
-    [self loadFaultIfNeededWithSetSelectorName:seletorName fieldInfo:fieldInfo];
+    BLBaseDBObjectFieldInfo *fieldInfo = [self fieldInfoWithHookSetterSelector:_cmd shouldCheckFault:YES];
     
     //BLLogDebug(@"setter %@", seletorName);
     
@@ -984,13 +961,7 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
 
 - (void)hookSetterForUnsignedCharType:(unsigned char)value
 {
-    NSString *seletorName = NSStringFromSelector(_cmd);
-    if (!self->fieldInfoForSetters) {
-        NSString *className = NSStringFromClass([self class]);
-        self->fieldInfoForSetters = g_setterName_fieldInfo[className];
-    }
-    BLBaseDBObjectFieldInfo *fieldInfo = self->fieldInfoForSetters[seletorName];
-    [self loadFaultIfNeededWithSetSelectorName:seletorName fieldInfo:fieldInfo];
+    BLBaseDBObjectFieldInfo *fieldInfo = [self fieldInfoWithHookSetterSelector:_cmd shouldCheckFault:YES];
     
     //BLLogDebug(@"setter %@", seletorName);
     
@@ -1002,13 +973,7 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
 
 - (void)hookSetterForUnsignedIntType:(unsigned int)value
 {
-    NSString *seletorName = NSStringFromSelector(_cmd);
-    if (!self->fieldInfoForSetters) {
-        NSString *className = NSStringFromClass([self class]);
-        self->fieldInfoForSetters = g_setterName_fieldInfo[className];
-    }
-    BLBaseDBObjectFieldInfo *fieldInfo = self->fieldInfoForSetters[seletorName];
-    [self loadFaultIfNeededWithSetSelectorName:seletorName fieldInfo:fieldInfo];
+    BLBaseDBObjectFieldInfo *fieldInfo = [self fieldInfoWithHookSetterSelector:_cmd shouldCheckFault:YES];
     
     //BLLogDebug(@"setter %@", seletorName);
     
@@ -1020,13 +985,7 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
 
 - (void)hookSetterForUnsignedShortType:(unsigned short)value
 {
-    NSString *seletorName = NSStringFromSelector(_cmd);
-    if (!self->fieldInfoForSetters) {
-        NSString *className = NSStringFromClass([self class]);
-        self->fieldInfoForSetters = g_setterName_fieldInfo[className];
-    }
-    BLBaseDBObjectFieldInfo *fieldInfo = self->fieldInfoForSetters[seletorName];
-    [self loadFaultIfNeededWithSetSelectorName:seletorName fieldInfo:fieldInfo];
+    BLBaseDBObjectFieldInfo *fieldInfo = [self fieldInfoWithHookSetterSelector:_cmd shouldCheckFault:YES];
     
     //BLLogDebug(@"setter %@", seletorName);
     
@@ -1038,13 +997,7 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
 
 - (void)hookSetterForUnsignedLongType:(unsigned long)value
 {
-    NSString *seletorName = NSStringFromSelector(_cmd);
-    if (!self->fieldInfoForSetters) {
-        NSString *className = NSStringFromClass([self class]);
-        self->fieldInfoForSetters = g_setterName_fieldInfo[className];
-    }
-    BLBaseDBObjectFieldInfo *fieldInfo = self->fieldInfoForSetters[seletorName];
-    [self loadFaultIfNeededWithSetSelectorName:seletorName fieldInfo:fieldInfo];
+    BLBaseDBObjectFieldInfo *fieldInfo = [self fieldInfoWithHookSetterSelector:_cmd shouldCheckFault:YES];
     
     //BLLogDebug(@"setter %@", seletorName);
     
@@ -1056,13 +1009,7 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
 
 - (void)hookSetterForUnsignedLongLongType:(unsigned long long)value
 {
-    NSString *seletorName = NSStringFromSelector(_cmd);
-    if (!self->fieldInfoForSetters) {
-        NSString *className = NSStringFromClass([self class]);
-        self->fieldInfoForSetters = g_setterName_fieldInfo[className];
-    }
-    BLBaseDBObjectFieldInfo *fieldInfo = self->fieldInfoForSetters[seletorName];
-    [self loadFaultIfNeededWithSetSelectorName:seletorName fieldInfo:fieldInfo];
+    BLBaseDBObjectFieldInfo *fieldInfo = [self fieldInfoWithHookSetterSelector:_cmd shouldCheckFault:YES];
     
     //BLLogDebug(@"setter %@", seletorName);
     
@@ -1074,13 +1021,7 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
 
 - (void)hookSetterForFloatType:(float)value
 {
-    NSString *seletorName = NSStringFromSelector(_cmd);
-    if (!self->fieldInfoForSetters) {
-        NSString *className = NSStringFromClass([self class]);
-        self->fieldInfoForSetters = g_setterName_fieldInfo[className];
-    }
-    BLBaseDBObjectFieldInfo *fieldInfo = self->fieldInfoForSetters[seletorName];
-    [self loadFaultIfNeededWithSetSelectorName:seletorName fieldInfo:fieldInfo];
+    BLBaseDBObjectFieldInfo *fieldInfo = [self fieldInfoWithHookSetterSelector:_cmd shouldCheckFault:YES];
     
     //BLLogDebug(@"setter %@", seletorName);
     
@@ -1092,13 +1033,7 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
 
 - (void)hookSetterForDoubleType:(double)value
 {
-    NSString *seletorName = NSStringFromSelector(_cmd);
-    if (!self->fieldInfoForSetters) {
-        NSString *className = NSStringFromClass([self class]);
-        self->fieldInfoForSetters = g_setterName_fieldInfo[className];
-    }
-    BLBaseDBObjectFieldInfo *fieldInfo = self->fieldInfoForSetters[seletorName];
-    [self loadFaultIfNeededWithSetSelectorName:seletorName fieldInfo:fieldInfo];
+    BLBaseDBObjectFieldInfo *fieldInfo = [self fieldInfoWithHookSetterSelector:_cmd shouldCheckFault:YES];
     
     //BLLogDebug(@"setter %@", seletorName);
     
@@ -1110,13 +1045,7 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
 
 - (void)hookSetterForBoolType:(BOOL)value
 {
-    NSString *seletorName = NSStringFromSelector(_cmd);
-    if (!self->fieldInfoForSetters) {
-        NSString *className = NSStringFromClass([self class]);
-        self->fieldInfoForSetters = g_setterName_fieldInfo[className];
-    }
-    BLBaseDBObjectFieldInfo *fieldInfo = self->fieldInfoForSetters[seletorName];
-    [self loadFaultIfNeededWithSetSelectorName:seletorName fieldInfo:fieldInfo];
+    BLBaseDBObjectFieldInfo *fieldInfo = [self fieldInfoWithHookSetterSelector:_cmd shouldCheckFault:YES];
     
     //BLLogDebug(@"setter %@", seletorName);
     
@@ -1139,8 +1068,12 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
         cls = [cls superclass];
     }
     
+    if (!fieldInfoForPropertyName) {
+        fieldInfoForPropertyName = g_propertyName_map[[self class]];
+    }
+    
     for (NSString *propertyName in codeableProperties) {
-        BLBaseDBObjectFieldInfo *info = g_propertyName_fieldInfo[propertyName];
+        BLBaseDBObjectFieldInfo *info = fieldInfoForPropertyName[propertyName];
         if (info.isRelationship) {
             continue;
         }
@@ -1165,11 +1098,15 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
         cls = [cls superclass];
     }
     
+    if (!fieldInfoForPropertyName) {
+        fieldInfoForPropertyName = g_propertyName_map[[self class]];
+    }
+    
     for (NSString *propertyName in codeableProperties) {
         if ([excludeProperties containsObject:propertyName]) {
             continue;
         } else {
-            BLBaseDBObjectFieldInfo *info = g_propertyName_fieldInfo[propertyName];
+            BLBaseDBObjectFieldInfo *info = fieldInfoForPropertyName[propertyName];
             if (info.isRelationship) {
                 continue;
             }
@@ -1193,9 +1130,13 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
         cls = [cls superclass];
     }
     
+    if (!fieldInfoForPropertyName) {
+        fieldInfoForPropertyName = g_propertyName_map[[self class]];
+    }
+    
     for (NSString *propertyName in codeableProperties) {
         if ([includeProperties containsObject:propertyName]) {
-            BLBaseDBObjectFieldInfo *info = g_propertyName_fieldInfo[propertyName];
+            BLBaseDBObjectFieldInfo *info = fieldInfoForPropertyName[propertyName];
             if (info.isRelationship) {
                 continue;
             }
@@ -1221,8 +1162,12 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
             cls = [cls superclass];
         }
         
+        if (!fieldInfoForPropertyName) {
+            fieldInfoForPropertyName = g_propertyName_map[[self class]];
+        }
+        
         for (NSString *propertyName in codeableProperties) {
-            BLBaseDBObjectFieldInfo *info = g_propertyName_fieldInfo[propertyName];
+            BLBaseDBObjectFieldInfo *info = fieldInfoForPropertyName[propertyName];
             if (info.isRelationship) {
                 continue;
             }
@@ -1246,8 +1191,12 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
         cls = [cls superclass];
     }
     
+    if (!fieldInfoForPropertyName) {
+        fieldInfoForPropertyName = g_propertyName_map[[self class]];
+    }
+    
     for (NSString *propertyName in codeableProperties) {
-        BLBaseDBObjectFieldInfo *info = g_propertyName_fieldInfo[propertyName];
+        BLBaseDBObjectFieldInfo *info = fieldInfoForPropertyName[propertyName];
         if (info.isRelationship) {
             continue;
         }
@@ -1341,8 +1290,8 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
         assert(false);
     }
     
-    NSString *className = NSStringFromClass([self class]);
-    NSDictionary *database_fieldInfo = g_database_fieldInfo[className];
+    //NSString *className = NSStringFromClass([self class]);
+    NSDictionary *database_fieldInfo = g_database_map[[self class]];
     NSArray *fieldNames = [database_fieldInfo allKeys];
     NSMutableArray *indexColumnNames = [NSMutableArray array];
     NSUInteger count = [fieldNames count];
@@ -1385,8 +1334,8 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
 {
     [connection validateReadWriteInTransaction];
     NSMutableString *sql = [NSMutableString stringWithFormat:@"ALTER TABLE %@\n ADD ", [self tableName]];
-    NSString *className = NSStringFromClass([self class]);
-    NSDictionary *database_fieldInfo = g_database_fieldInfo[className];
+    //NSString *className = NSStringFromClass([self class]);
+    NSDictionary *database_fieldInfo = g_database_map[[self class]];
     NSArray *columnNames = [columnNameAndValues allKeys];
     NSUInteger count = [columnNames count];
     
@@ -1431,8 +1380,8 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
         return;
     }
     
-    NSString *className = NSStringFromClass([self class]);
-    NSArray *fieldNames = g_database_fieldInfo[className];
+    //NSString *className = NSStringFromClass([self class]);
+    NSArray *fieldNames = [self databaseFieldNames];
     NSMutableSet *fieldNamesSet = [NSMutableSet setWithArray:fieldNames];
     [fieldNamesSet minusSet:[NSSet setWithArray:columnNames]];
     NSString *linkColumnNames = [[fieldNamesSet allObjects] componentsJoinedByString:@", "];
@@ -1952,8 +1901,8 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
     
     NSString *query = [self queryWithFieldNames:fieldNames where:where orderBy:orderBy length:length offset:offset];
     FMResultSet *resultSet = [connection.fmdb executeQuery:query withVAList:args];
-    NSString *className = NSStringFromClass([self class]);
-    NSDictionary *fieldInfo = g_database_fieldInfo[className];
+    //NSString *className = NSStringFromClass([self class]);
+    NSDictionary *fieldInfo = g_database_map[[self class]];
     NSArray *objects = [self objectsWithResultSet:resultSet
                                        fieldNames:fieldNames
                                     uniqueIdIndex:uniqueIdIndex
@@ -2511,9 +2460,9 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
             NSString *uniqueIdFieldName = [[self class] uniqueIdFieldName];
             
             int *fieldTypes = (int *)malloc([fieldNames count] * sizeof(int));
-            if (!self->fieldInfoForDatabase) {
-                NSString *className = NSStringFromClass([self class]);
-                self->fieldInfoForDatabase = g_database_fieldInfo[className];
+            if (!fieldInfoForDatabase) {
+                //NSString *className = NSStringFromClass([self class]);
+                fieldInfoForDatabase = g_database_map[[self class]];
             }
             [fieldNames enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
                 BLBaseDBObjectFieldInfo *info = self->fieldInfoForDatabase[obj];
@@ -2630,8 +2579,8 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
 
 + (NSString *)createTableSql
 {
-    NSString *className = NSStringFromClass([self class]);
-    NSDictionary *database_fieldInfo = g_database_fieldInfo[className];
+    //NSString *className = NSStringFromClass([self class]);
+    NSDictionary *database_fieldInfo = g_database_map[[self class]];
     NSArray *fieldNames = [database_fieldInfo allKeys];
     NSMutableString *sql = [NSMutableString string];
     
@@ -2831,8 +2780,11 @@ static NSMutableDictionary *g_getterName_fieldInfo = nil;
     
     for (NSString *fieldName in fieldNames) {
         id value = [self valueForKey:fieldName];
-        NSString *className = NSStringFromClass([self class]);
-        BLBaseDBObjectFieldInfo *info = g_database_fieldInfo[className][fieldName];
+        //NSString *className = NSStringFromClass([self class]);
+        if (!fieldInfoForDatabase) {
+            fieldInfoForDatabase = g_database_map[[self class]];
+        }
+        BLBaseDBObjectFieldInfo *info = fieldInfoForDatabase[fieldName];
         if (!info) {
             BLLogError(@"info is nil for fieldName = %@", fieldName);
             assert(false);

@@ -170,7 +170,7 @@ dispatch_async(dispatch_get_main_queue(), block); \
     [self generateSectionsWithObjects:evaluativeObjects];
     self.sortedObjects = [NSMutableArray arrayWithArray:evaluativeObjects];
     _fetchedId++;
-    BLLogInfo(@"perform fetch time duration = %lf, count = %lu", [[NSDate date] timeIntervalSince1970] - time1, [self.sortedObjects count]);
+    BLLogInfo(@"perform fetch time duration = %lf, count = %lu", [[NSDate date] timeIntervalSince1970] - time1, (unsigned long)[self.sortedObjects count]);
 }
 
 /*
