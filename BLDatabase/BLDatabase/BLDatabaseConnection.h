@@ -15,23 +15,22 @@
 @property (nonatomic, strong, readonly) BLDatabase *database;
 @property (nonatomic, assign) NSUInteger cacheCountLimit; //default is 500;
 
-// type is BLPrivateQueueDatabaseConnectionType
 - (instancetype)initWithDatabase:(BLDatabase *)database;
 
-- (void)touchedObject:(id)object;
-- (void)touchedObjects:(id)objects;
+- (void)touchedObject:(id)object error:(NSError **)error;
+- (void)touchedObjects:(id)objects error:(NSError **)error;
 
-- (void)insertOrUpdateObject:(BLBaseDBObject *)object;
-- (void)insertOrUpdateObjects:(NSArray *)objects;
+- (void)insertOrUpdateObject:(BLBaseDBObject *)object error:(NSError **)error;
+- (void)insertOrUpdateObjects:(NSArray *)objects error:(NSError **)error;
 
-- (void)insertObject:(BLBaseDBObject *)object;
-- (void)insertObjects:(NSArray *)objects;
+- (void)insertObject:(BLBaseDBObject *)object error:(NSError **)error;
+- (void)insertObjects:(NSArray *)objects error:(NSError **)error;
 
-- (void)updateObject:(BLBaseDBObject *)object;
-- (void)updateObjects:(NSArray *)objects;
+- (void)updateObject:(BLBaseDBObject *)object error:(NSError **)error;
+- (void)updateObjects:(NSArray *)objects error:(NSError **)error;
 
-- (void)deleteObject:(BLBaseDBObject *)object;
-- (void)deleteObjects:(NSArray *)objects;
+- (void)deleteObject:(BLBaseDBObject *)object error:(NSError **)error;
+- (void)deleteObjects:(NSArray *)objects error:(NSError **)error;
 
 - (void)performReadBlockAndWait:(void(^)(void))block;
 - (void)performReadBlock:(void(^)(void))block;

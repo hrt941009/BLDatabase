@@ -255,8 +255,7 @@
 - (void)validateRead
 {
     if (![self isInReadQueue] && ![self isInWriteQueue]) {
-        BLLogError(@"you must be excute in read queue");
-        assert(false);
+        NSAssert(false, @"you must be excute in read queue");
     }
 }
 
@@ -264,79 +263,68 @@
 {
     BOOL inTransaction = [self.fmdb inTransaction];
     if (!inTransaction || ![self isInWriteQueue]) {
-        BLLogError(@"you must be excute in write queue and in transaction");
-        assert(false);
+        NSAssert(false, @"you must be excute in write queue and in transaction");
     }
 }
 
-- (void)touchedObject:(id)object
+- (void)touchedObject:(id)object error:(NSError **)error
 {
     if (object) {
-        [self touchedObjects:@[object]];
+        [self touchedObjects:@[object] error:error];
     }
 }
 
-- (void)touchedObjects:(id)objects
+- (void)touchedObjects:(id)objects error:(NSError **)error
 {
-    for (id object in objects) {
-        [object touchedInConnection:self];
-    }
+    [BLBaseDBObject touchedObjects:objects inConnection:self error:error];
 }
 
-- (void)insertOrUpdateObject:(BLBaseDBObject *)object
+- (void)insertOrUpdateObject:(BLBaseDBObject *)object error:(NSError **)error
 {
     if (object) {
-        [self insertOrUpdateObjects:@[object]];
+        [self insertOrUpdateObjects:@[object] error:error];
     }
 }
 
-- (void)insertOrUpdateObjects:(NSArray *)objects
+- (void)insertOrUpdateObjects:(NSArray *)objects error:(NSError **)error
 {
-    for (id object in objects) {
-        [object insertOrUpdateInConnection:self];
-    }
+    [BLBaseDBObject insertOrUpdateObjects:objects inConnection:self error:error];
 }
 
-- (void)insertObject:(id)object
+- (void)insertObject:(id)object error:(NSError **)error
 {
     if (object) {
-        [self insertObjects:@[object]];
+        [self insertObjects:@[object] error:error];
     }
 }
 
-- (void)insertObjects:(NSArray *)objects
+- (void)insertObjects:(NSArray *)objects error:(NSError **)error
 {
-    for (id object in objects) {
-        [object insertInConnection:self];
-    }
+    [BLBaseDBObject insertObjects:objects inConnection:self error:error];
 }
 
-- (void)updateObject:(BLBaseDBObject *)object
+- (void)updateObject:(BLBaseDBObject *)object error:(NSError **)error
 {
     if (object) {
-        [self updateObjects:@[object]];
+        [self updateObjects:@[object] error:error];
     }
 }
 
-- (void)updateObjects:(NSArray *)objects
+- (void)updateObjects:(NSArray *)objects error:(NSError **)error
 {
-    for (id object in objects) {
-        [object updateInConnection:self];
-    }
+    [BLBaseDBObject updateObjects:objects inConnection:self error:error];
 }
 
-- (void)deleteObject:(id)object
+- (void)deleteObject:(id)object error:(NSError **)error
 {
     if (object) {
-        [self deleteObjects:@[object]];
+        [self deleteObjects:@[object] error:error];
     }
 }
 
-- (void)deleteObjects:(NSArray *)objects
+- (void)deleteObjects:(NSArray *)objects error:(NSError **)error
 {
-    for (id object in objects) {
-        [object deleteInConnection:self];
-    }
+    [BLBaseDBObject deleteObjects:objects inConnection:self error:error];
 }
 
 - (void)beginTransaction

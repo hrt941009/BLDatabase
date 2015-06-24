@@ -266,8 +266,7 @@ std::unordered_map<Class, innerUnorderedMap> g_getterName_map;
                                 // UT测试不通过，具体原因还没找到
                                 Class baseClass = NSClassFromString(NSStringFromClass([BLBaseDBObject class]));
                                 if (![propertyClass isSubclassOfClass:baseClass]) {
-                                    BLLogError(@"unsupport type for BLDatabase, propertyName is %@", propertyName);
-                                    assert(false);
+                                    NSAssert(false, @"unsupport type for BLDatabase, propertyName is %@", propertyName);
                                 }
                                 hookGetter = class_getInstanceMethod(self, @selector(hookGetterForRelationships));
                                 hookSetter = class_getInstanceMethod(self, @selector(hookSetterForRelationships:));
@@ -290,8 +289,7 @@ std::unordered_map<Class, innerUnorderedMap> g_getterName_map;
                                 // UT测试不通过，具体原因还没找到
                                 Class baseClass = NSClassFromString(NSStringFromClass([BLBaseDBObject class]));
                                 if (![propertyClass isSubclassOfClass:baseClass]) {
-                                    BLLogError(@"unsupport type for BLDatabase, propertyName is %@", propertyName);
-                                    assert(false);
+                                    NSAssert(@"unsupport type for BLDatabase, propertyName is %@", propertyName);
                                 }
                                 
                                 hookGetter = class_getInstanceMethod(self, @selector(hookGetterForRelationship));
@@ -379,8 +377,7 @@ std::unordered_map<Class, innerUnorderedMap> g_getterName_map;
                             break;
                         }
                         default: {
-                            BLLogError(@"unsupport type for BLDatabase, propertyName is %@", propertyName);
-                            assert(false);
+                            NSAssert(false, @"unsupport type for BLDatabase, propertyName is %@", propertyName);
                             break;
                         }
                     }
@@ -418,8 +415,7 @@ std::unordered_map<Class, innerUnorderedMap> g_getterName_map;
                         info->oldGetter = oldGetter;
                         BOOL success = class_addMethod(self, oldGetter, method_getImplementation(currentGetter), method_getTypeEncoding(currentGetter));
                         if (!success) {
-                            BLLogError(@"add method failed");
-                            assert(false);
+                            NSAssert(false, @"add method failed");
                         }
                         method_setImplementation(currentGetter, method_getImplementation(hookGetter));
                         
@@ -431,8 +427,7 @@ std::unordered_map<Class, innerUnorderedMap> g_getterName_map;
                         info->oldSetter = oldSetter;
                         success = class_addMethod(self, oldSetter, method_getImplementation(currentSetter), method_getTypeEncoding(currentSetter));
                         if (!success) {
-                            BLLogError(@"add method failed");
-                            assert(false);
+                            NSAssert(false, @"add method failed");
                         }
                         method_setImplementation(currentSetter, method_getImplementation(hookSetter));
                     }
@@ -621,10 +616,9 @@ std::unordered_map<Class, innerUnorderedMap> g_getterName_map;
 //{
 //    if (self.enableFullLoadIfFault && self.isFault) {
 //        if (!fieldInfo.propertyName) {
-//            BLLogError(@"propertyName is nil for seletorName = %@", seletorName);
-//            assert(false);
+//            NSAssert(false, @"propertyName is nil for seletorName = %@", seletorName);
 //        }
-//        
+//
 //        // fault对象且当前访问的属性不是预加载属性 则从db读取数据
 //        if (![self.preloadFieldNames containsObject:fieldInfo.propertyName]) {
 //            [self loadFaultInConnection:_connection];
@@ -637,8 +631,7 @@ std::unordered_map<Class, innerUnorderedMap> g_getterName_map;
 {
     if (self.enableFullLoadIfFault && self.isFault) {
         if (!fieldInfo.propertyName) {
-            BLLogError(@"propertyName is nil for seletorName = %s", seletorName);
-            assert(false);
+            NSAssert(false, @"propertyName is nil for seletorName = %s", seletorName);
         }
         
         // fault对象且当前访问的属性不是预加载属性 则从db读取数据
@@ -832,8 +825,7 @@ std::unordered_map<Class, innerUnorderedMap> g_getterName_map;
 //                                   fieldInfo:(BLBaseDBObjectFieldInfo *)fieldInfo
 //{
 //    if (!fieldInfo.propertyName) {
-//        BLLogError(@"propertyName is nil for seletorName = %@", seletorName);
-//        assert(false);
+//        NSAssert(false, @"propertyName is nil for seletorName = %@", seletorName);
 //    }
 //    
 //    if (self.enableFullLoadIfFault && self.isFault) {
@@ -850,8 +842,7 @@ std::unordered_map<Class, innerUnorderedMap> g_getterName_map;
                                    fieldInfo:(BLBaseDBObjectFieldInfo *)fieldInfo
 {
     if (!fieldInfo.propertyName) {
-        BLLogError(@"propertyName is nil for seletorName = %s", seletorName);
-        assert(false);
+        NSAssert(false, @"propertyName is nil for seletorName = %s", seletorName);
     }
     
     if (self.enableFullLoadIfFault && self.isFault) {
@@ -1257,26 +1248,6 @@ std::unordered_map<Class, innerUnorderedMap> g_getterName_map;
     return YES;
 }
 
-- (BOOL)shouldTouchedInConnection:(BLDatabaseConnection *)connection
-{
-    return YES;
-}
-
-- (BOOL)shouldInsertInConnection:(BLDatabaseConnection *)connection
-{
-    return YES;
-}
-
-- (BOOL)shouldUpdateInConnection:(BLDatabaseConnection *)connection
-{
-    return YES;
-}
-
-- (BOOL)shouldDeleteInConnection:(BLDatabaseConnection *)connection
-{
-    return YES;
-}
-
 #pragma mark -
 
 + (void)createTableAndIndexIfNeededInConnection:(BLDatabaseConnection *)connection
@@ -1286,8 +1257,7 @@ std::unordered_map<Class, innerUnorderedMap> g_getterName_map;
     BLLogDebug(@"sql = %@", sql);
     BOOL success = [connection.fmdb executeUpdate:sql];
     if (!success) {
-        BLLogError(@"code = %d, message = %@", [connection.fmdb lastErrorCode], [connection.fmdb lastErrorMessage]);
-        assert(false);
+        NSAssert(false, @"code = %d, message = %@", [connection.fmdb lastErrorCode], [connection.fmdb lastErrorMessage]);
     }
     
     //NSString *className = NSStringFromClass([self class]);
@@ -1342,7 +1312,7 @@ std::unordered_map<Class, innerUnorderedMap> g_getterName_map;
     for (int i = 0; i < count; i++) {
         NSString *columnName = columnNames[i];
         BLBaseDBObjectFieldInfo *fieldInfo = database_fieldInfo[columnName];
-        assert(fieldInfo != nil);
+        NSAssert(fieldInfo != nil, @"fieldInfo can not be nil");
         
         NSString *typeString = [self typeStringWithFieldType:fieldInfo.type];
         [sql appendFormat:@"%@ %@", columnName, typeString];
@@ -1361,8 +1331,7 @@ std::unordered_map<Class, innerUnorderedMap> g_getterName_map;
     
     BOOL success = [connection.fmdb executeUpdate:sql];
     if (!success) {
-        BLLogError(@"code = %d, message = %@", [connection.fmdb lastErrorCode], [connection.fmdb lastErrorMessage]);
-        assert(false);
+        NSAssert(false, @"code = %d, message = %@", [connection.fmdb lastErrorCode], [connection.fmdb lastErrorMessage]);
     }
 }
 
@@ -1394,8 +1363,7 @@ std::unordered_map<Class, innerUnorderedMap> g_getterName_map;
     BLLogDebug(@"sql = %@", sql);
     BOOL success = [connection.fmdb executeUpdate:sql];
     if (!success) {
-        BLLogError(@"code = %d, message = %@", [connection.fmdb lastErrorCode], [connection.fmdb lastErrorMessage]);
-        assert(false);
+        NSAssert(false, @"code = %d, message = %@", [connection.fmdb lastErrorCode], [connection.fmdb lastErrorMessage]);
     }
 }
 
@@ -1414,8 +1382,7 @@ std::unordered_map<Class, innerUnorderedMap> g_getterName_map;
         BLLogDebug(@"sql = %@", sql);
         BOOL success = [connection.fmdb executeUpdate:sql];
         if (!success) {
-            BLLogError(@"code = %d, message = %@", [connection.fmdb lastErrorCode], [connection.fmdb lastErrorMessage]);
-            assert(false);
+            NSAssert(false, @"code = %d, message = %@", [connection.fmdb lastErrorCode], [connection.fmdb lastErrorMessage]);
         }
     }
 }
@@ -1428,8 +1395,7 @@ std::unordered_map<Class, innerUnorderedMap> g_getterName_map;
     BLLogDebug(@"sql = %@", sql);
     BOOL success = [connection.fmdb executeUpdate:sql];
     if (!success) {
-        BLLogError(@"code = %d, message = %@", [connection.fmdb lastErrorCode], [connection.fmdb lastErrorMessage]);
-        assert(false);
+        NSAssert(false, @"code = %d, message = %@", [connection.fmdb lastErrorCode], [connection.fmdb lastErrorMessage]);
     }
 }
 
@@ -1448,8 +1414,7 @@ std::unordered_map<Class, innerUnorderedMap> g_getterName_map;
         BLLogDebug(@"sql = %@", sql);
         BOOL success = [connection.fmdb executeUpdate:sql];
         if (!success) {
-            BLLogError(@"code = %d, message = %@", [connection.fmdb lastErrorCode], [connection.fmdb lastErrorMessage]);
-            assert(false);
+            NSAssert(false, @"code = %d, message = %@", [connection.fmdb lastErrorCode], [connection.fmdb lastErrorMessage]);
         }
     }
 }
@@ -1462,8 +1427,7 @@ std::unordered_map<Class, innerUnorderedMap> g_getterName_map;
     BLLogDebug(@"sql = %@", sql);
     BOOL success = [connection.fmdb executeUpdate:sql];
     if (!success) {
-        BLLogError(@"code = %d, message = %@", [connection.fmdb lastErrorCode], [connection.fmdb lastErrorMessage]);
-        assert(false);
+        NSAssert(false, @"code = %d, message = %@", [connection.fmdb lastErrorCode], [connection.fmdb lastErrorMessage]);
     }
 }
 
@@ -1557,6 +1521,18 @@ std::unordered_map<Class, innerUnorderedMap> g_getterName_map;
 }
 
 + (id)findFirstObjectInConnection:(BLDatabaseConnection *)connection
+                            where:(NSString *)where
+                        arguments:(NSArray *)arguments
+{
+    id object = [self findFirstObjectInConnection:connection
+                                          orderBy:nil
+                                            where:where
+                                        arguments:arguments];
+    
+    return object;
+}
+
++ (id)findFirstObjectInConnection:(BLDatabaseConnection *)connection
                           orderBy:(NSString *)orderBy
                             where:(NSString *)where, ...
 {
@@ -1582,6 +1558,21 @@ std::unordered_map<Class, innerUnorderedMap> g_getterName_map;
                                           orderBy:orderBy
                                             where:where
                                            vaList:args];
+    
+    return object;
+}
+
++ (id)findFirstObjectInConnection:(BLDatabaseConnection *)connection
+                          orderBy:(NSString *)orderBy
+                            where:(NSString *)where
+                        arguments:(NSArray *)arguments
+{
+    NSArray *fieldNames = nil;
+    id object = [self findFirstObjectInConnection:connection
+                                       fieldNames:fieldNames
+                                          orderBy:orderBy
+                                            where:where
+                                        arguments:arguments];
     
     return object;
 }
@@ -1643,6 +1634,20 @@ std::unordered_map<Class, innerUnorderedMap> g_getterName_map;
 
 + (id)findFirstObjectInConnection:(BLDatabaseConnection *)connection
                        fieldNames:(NSArray *)fieldNames
+                            where:(NSString *)where
+                        arguments:(NSArray *)arguments
+{
+    id object = [self findFirstObjectInConnection:connection
+                                       fieldNames:fieldNames
+                                          orderBy:nil
+                                            where:where
+                                        arguments:arguments];
+    
+    return object;
+}
+
++ (id)findFirstObjectInConnection:(BLDatabaseConnection *)connection
+                       fieldNames:(NSArray *)fieldNames
                           orderBy:(NSString *)orderBy
                             where:(NSString *)where, ...
 {
@@ -1673,6 +1678,23 @@ std::unordered_map<Class, innerUnorderedMap> g_getterName_map;
                                              offset:0
                                               where:where
                                              vaList:args];
+    
+    return [result firstObject];
+}
+
++ (id)findFirstObjectInConnection:(BLDatabaseConnection *)connection
+                       fieldNames:(NSArray *)fieldNames
+                          orderBy:(NSString *)orderBy
+                            where:(NSString *)where
+                        arguments:(NSArray *)arguments
+{
+    NSArray *result = [self findObjectsInConnection:connection
+                                         fieldNames:fieldNames
+                                            orderBy:orderBy
+                                             length:1
+                                             offset:0
+                                              where:where
+                                          arguments:arguments];
     
     return [result firstObject];
 }
@@ -1721,6 +1743,20 @@ std::unordered_map<Class, innerUnorderedMap> g_getterName_map;
 }
 
 + (NSArray *)findObjectsInConnection:(BLDatabaseConnection *)connection
+                               where:(NSString *)where
+                           arguments:(NSArray *)arguments
+{
+    NSArray *result = [self findObjectsInConnection:connection
+                                            orderBy:nil
+                                             length:0
+                                             offset:0
+                                              where:where
+                                          arguments:arguments];
+    
+    return result;
+}
+
++ (NSArray *)findObjectsInConnection:(BLDatabaseConnection *)connection
                              orderBy:(NSString *)orderBy
                                where:(NSString *)where, ...
 {
@@ -1733,6 +1769,21 @@ std::unordered_map<Class, innerUnorderedMap> g_getterName_map;
                                               where:where
                                              vaList:args];
     va_end(args);
+    
+    return result;
+}
+
++ (NSArray *)findObjectsInConnection:(BLDatabaseConnection *)connection
+                             orderBy:(NSString *)orderBy
+                               where:(NSString *)where
+                           arguments:(NSArray *)arguments
+{
+    NSArray *result = [self findObjectsInConnection:connection
+                                            orderBy:orderBy
+                                             length:0
+                                             offset:0
+                                              where:where
+                                          arguments:arguments];
     
     return result;
 }
@@ -1779,6 +1830,28 @@ std::unordered_map<Class, innerUnorderedMap> g_getterName_map;
 }
 
 + (NSArray *)findObjectsInConnection:(BLDatabaseConnection *)connection
+                             orderBy:(NSString *)orderBy
+                              length:(u_int64_t)length
+                              offset:(u_int64_t)offset
+                               where:(NSString *)where
+                           arguments:(NSArray *)arguments
+{
+    NSMutableArray *fieldNames = nil;
+    /*
+     NSMutableArray *fieldNames = [NSMutableArray arrayWithObjects:[self rowidFieldName], [self uniqueIdFieldName], nil];
+     */
+    NSArray *result = [self findObjectsInConnection:connection
+                                         fieldNames:fieldNames
+                                            orderBy:orderBy
+                                             length:length
+                                             offset:offset
+                                              where:where
+                                          arguments:arguments];
+    
+    return result;
+}
+
++ (NSArray *)findObjectsInConnection:(BLDatabaseConnection *)connection
                           fieldNames:(NSArray *)fieldNames
 {
     NSArray *result = [self findObjectsInConnection:connection
@@ -1827,6 +1900,22 @@ std::unordered_map<Class, innerUnorderedMap> g_getterName_map;
 
 + (NSArray *)findObjectsInConnection:(BLDatabaseConnection *)connection
                           fieldNames:(NSArray *)fieldNames
+                               where:(NSString *)where
+                           arguments:(NSArray *)arguments
+{
+    NSArray *result = [self findObjectsInConnection:connection
+                                         fieldNames:fieldNames
+                                            orderBy:nil
+                                             length:0
+                                             offset:0
+                                              where:where
+                                          arguments:arguments];
+    
+    return result;
+}
+
++ (NSArray *)findObjectsInConnection:(BLDatabaseConnection *)connection
+                          fieldNames:(NSArray *)fieldNames
                              orderBy:(NSString *)orderBy
                                where:(NSString *)where, ...
 {
@@ -1840,6 +1929,21 @@ std::unordered_map<Class, innerUnorderedMap> g_getterName_map;
                                               where:where
                                              vaList:args];
     va_end(args);
+    
+    return result;
+}
+
++ (NSArray *)findObjectsInConnection:(BLDatabaseConnection *)connection
+                          fieldNames:(NSArray *)fieldNames
+                             orderBy:(NSString *)orderBy
+                               where:(NSString *)where
+                           arguments:(NSArray *)arguments
+{
+    NSArray *result = [self findObjectsInConnection:connection
+                                         fieldNames:fieldNames
+                                            orderBy:orderBy
+                                              where:where
+                                          arguments:arguments];
     
     return result;
 }
@@ -1897,10 +2001,59 @@ std::unordered_map<Class, innerUnorderedMap> g_getterName_map;
             *stop = YES;
         }
     }];
-    assert(uniqueIdIndex != NSNotFound);
+    NSAssert(uniqueIdIndex != NSNotFound, @"uniqueIdIndex can not be NSNotFound");
     
     NSString *query = [self queryWithFieldNames:fieldNames where:where orderBy:orderBy length:length offset:offset];
     FMResultSet *resultSet = [connection.fmdb executeQuery:query withVAList:args];
+    //NSString *className = NSStringFromClass([self class]);
+    NSDictionary *fieldInfo = g_database_map[[self class]];
+    NSArray *objects = [self objectsWithResultSet:resultSet
+                                       fieldNames:fieldNames
+                                    uniqueIdIndex:uniqueIdIndex
+                                          isFault:isFault
+                                        fieldInfo:fieldInfo
+                                     inConnection:connection];
+    [resultSet close];
+    
+    return objects;
+}
+
++ (NSArray *)findObjectsInConnection:(BLDatabaseConnection *)connection
+                          fieldNames:(NSArray *)fieldNames
+                             orderBy:(NSString *)orderBy
+                              length:(u_int64_t)length
+                              offset:(u_int64_t)offset
+                               where:(NSString *)where
+                           arguments:(NSArray *)arguments
+{
+    [connection validateRead];
+    BOOL isFault = NO;
+    if ([fieldNames count] < 1) {
+        fieldNames = [self databaseFieldNames];
+    } else {
+        NSString *uniqueIdFieldName = [self uniqueIdFieldName];
+        if (uniqueIdFieldName && ![fieldNames containsObject:uniqueIdFieldName]) {
+            fieldNames = [fieldNames arrayByAddingObject:uniqueIdFieldName];
+        }
+        isFault = [self isFaultWithFieldNames:fieldNames];
+    }
+    
+    NSString *rowidFieldName = [self rowidFieldName];
+    if (![fieldNames containsObject:rowidFieldName]) {
+        fieldNames = [fieldNames arrayByAddingObject:rowidFieldName];
+    }
+    
+    __block NSInteger uniqueIdIndex = NSNotFound;
+    [fieldNames enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        if ([[self uniqueIdFieldName] isEqualToString:obj]) {
+            uniqueIdIndex = idx;
+            *stop = YES;
+        }
+    }];
+    NSAssert(uniqueIdIndex != NSNotFound, @"uniqueIdIndex can not be NSNotFound");
+    
+    NSString *query = [self queryWithFieldNames:fieldNames where:where orderBy:orderBy length:length offset:offset];
+    FMResultSet *resultSet = [connection.fmdb executeQuery:query withArgumentsInArray:arguments];
     //NSString *className = NSStringFromClass([self class]);
     NSDictionary *fieldInfo = g_database_map[[self class]];
     NSArray *objects = [self objectsWithResultSet:resultSet
@@ -2146,164 +2299,316 @@ std::unordered_map<Class, innerUnorderedMap> g_getterName_map;
     return objects;
 }
 
-#pragma mark - touched object
+#pragma mark - touched/insert/update/delete object/objects
 
 - (void)touchedInConnection:(BLDatabaseConnection *)connection
+                      error:(NSError **)error
+{
+    [[self class] touchedObjects:@[self]
+                    inConnection:connection
+                           error:error];
+}
+
++ (void)touchedObjects:(NSArray *)objects
+          inConnection:(BLDatabaseConnection *)connection
+                 error:(NSError **)error
 {
     [connection validateReadWriteInTransaction];
-    if ([self shouldTouchedInConnection:connection]) {
-        NSError *error = nil;
-        BOOL isExist = [self isExistInConnection:connection];
+    for (BLBaseDBObject *object in objects) {
+        BOOL isExist = [object isExistInConnection:connection];
         
         if (isExist) {
             BLDBChangedObject *changedObject = [BLDBChangedObject new];
-            changedObject.uniqueId = self.uniqueId;
-            changedObject.tableName = [[self class] tableName];
-            changedObject.objectClass = [self class];
+            changedObject.uniqueId = object.uniqueId;
+            changedObject.tableName = [[object class] tableName];
+            changedObject.objectClass = [object class];
             changedObject.changedFiledNames = nil;
             changedObject.type = BLDBChangedObjectUpdate;
             
             [connection.changedObjects addObject:changedObject];
+            
+            if ([object respondsToSelector:@selector(didTouchedInConnection:)]) {
+                [object didTouchedInConnection:connection];
+            }
         } else {
             BLLogWarn(@"object not in database, touched object is invalidate");
-            error = BLDatabaseError(@"object not in database, touched object is invalidate");
-        }
-        
-        if ([self respondsToSelector:@selector(didTouchedInConnection:withError:)]) {
-            [self didTouchedInConnection:connection withError:error];
+            *error = BLDatabaseError(@"object not in database, touched object is invalidate");
         }
     }
 }
 
-#pragma mark - save/delete
-
 - (void)insertOrUpdateInConnection:(BLDatabaseConnection *)connection
+                             error:(NSError **)error
+{
+    [[self class] insertOrUpdateObjects:@[self]
+                           inConnection:connection
+                                  error:error];
+}
+
++ (void)insertOrUpdateObjects:(NSArray *)objects
+                 inConnection:(BLDatabaseConnection *)connection
+                        error:(NSError **)error
 {
     [connection validateReadWriteInTransaction];
-    BOOL isExist = [self isExistInConnection:connection];
-    if (isExist) {
-        [self updateInConnection:connection];
-    } else {
-        [self insertInConnection:connection];
+    for (BLBaseDBObject *object in objects) {
+        BOOL isExist = [object isExistInConnection:connection];
+        if (isExist) {
+            [object updateInConnection:connection error:error];
+        } else {
+            [object insertInConnection:connection error:error];
+        }
     }
 }
 
 - (void)insertInConnection:(BLDatabaseConnection *)connection
+                     error:(NSError **)error
+{
+    [[self class] insertObjects:@[self]
+                   inConnection:connection
+                          error:error];
+}
+
++ (void)insertObjects:(NSArray *)objects
+         inConnection:(BLDatabaseConnection *)connection
+                error:(NSError **)error
 {
     [connection validateReadWriteInTransaction];
-    if ([self shouldInsertInConnection:connection]) {
-        NSError *error = nil;
-        NSArray *fieldNames = [[self class] databaseFieldNames];
-        NSString *sql = [self insertSqlWithFieldNames:fieldNames];
+    for (BLBaseDBObject *object in objects) {
+        NSArray *fieldNames = [[object class] databaseFieldNames];
+        NSString *sql = [object insertSqlWithFieldNames:fieldNames];
         
-        BOOL success = [connection.fmdb executeUpdate:sql withArgumentsInArray:[self valuesInFieldNames:fieldNames]];
+        BOOL success = [connection.fmdb executeUpdate:sql withArgumentsInArray:[object valuesInFieldNames:fieldNames]];
         if (!success) {
             BLLogError(@"code = %d, message = %@", connection.fmdb.lastErrorCode, connection.fmdb.lastErrorMessage);
-            error = connection.fmdb.lastError;
+            *error = connection.fmdb.lastError;
         } else {
             // 更新db字段
-            self.connection = connection;
+            object.connection = connection;
             
             // 更新rowid字段
-            self.rowid = connection.fmdb.lastInsertRowId;
+            object.rowid = connection.fmdb.lastInsertRowId;
+            
+            // 清空改变的properties
+            [object.changedFieldNames removeAllObjects];
             
             BLDBChangedObject *changedObject = [BLDBChangedObject new];
-            changedObject.uniqueId = self.uniqueId;
-            changedObject.tableName = [[self class] tableName];
-            changedObject.objectClass = [self class];
+            changedObject.uniqueId = object.uniqueId;
+            changedObject.tableName = [[object class] tableName];
+            changedObject.objectClass = [object class];
             changedObject.changedFiledNames = nil;
             changedObject.type = BLDBChangedObjectInsert;
             
             [connection.changedObjects addObject:changedObject];
-        }
-        
-        if ([self respondsToSelector:@selector(didInsertInConnection:withError:)]) {
-            [self didInsertInConnection:connection withError:error];
+            
+            if ([object respondsToSelector:@selector(didInsertInConnection:)]) {
+                [object didInsertInConnection:connection];
+            }
         }
     }
 }
 
 - (void)updateInConnection:(BLDatabaseConnection *)connection
+                     error:(NSError **)error
+{
+    [[self class] updateObjects:@[self]
+                   inConnection:connection
+                          error:error];
+}
+
++ (void)updateObjects:(NSArray *)objects
+         inConnection:(BLDatabaseConnection *)connection
+                error:(NSError **)error
 {
     [connection validateReadWriteInTransaction];
-    if ([self shouldUpdateInConnection:connection]) {
-        NSError *error = nil;
+    for (BLBaseDBObject *object in objects) {
         NSString *sql = nil;
-        NSMutableSet *allSet = [NSMutableSet setWithArray:[[self class] databaseFieldNames]];
-        [allSet intersectSet:self.changedFieldNames];
+        NSMutableSet *allSet = [NSMutableSet setWithArray:[[object class] databaseFieldNames]];
+        [allSet intersectSet:object.changedFieldNames];
         NSArray *fieldNames = [allSet allObjects];
         
         if ([fieldNames count] >= 1) {
-            sql = [self updateSqlWithFieldNames:fieldNames];
+            sql = [object updateSqlWithFieldNames:fieldNames];
         } else {
             BLLogWarn(@"object has no changes, should not update");
-            error = BLDatabaseError(@"object has no changes, should not update");
+            *error = BLDatabaseError(@"object has no changes, should not update");
         }
         
         if (sql) {
-            BOOL success = [connection.fmdb executeUpdate:sql withArgumentsInArray:[self valuesInFieldNames:fieldNames]];
+            BOOL success = [connection.fmdb executeUpdate:sql withArgumentsInArray:[object valuesInFieldNames:fieldNames]];
             if (!success) {
                 BLLogError(@"code = %d, message = %@", connection.fmdb.lastErrorCode, connection.fmdb.lastErrorMessage);
-                error = connection.fmdb.lastError;
+                *error = connection.fmdb.lastError;
             } else {
                 // 更新db字段
-                self.connection = connection;
+                object.connection = connection;
                 
                 // 清空改变的properties
-                [self.changedFieldNames removeAllObjects];
+                [object.changedFieldNames removeAllObjects];
                 
-                //NSString *cacheKey = [[self class] cacheKeyWithUniqueId:[self uniqueId]];
-                //[[self class] removeWithKey:cacheKey inCachedObjects:connection.cachedObjects];
+                //NSString *cacheKey = [[object class] cacheKeyWithUniqueId:[self uniqueId]];
+                //[[object class] removeWithKey:cacheKey inCachedObjects:connection.cachedObjects];
                 
                 BLDBChangedObject *changedObject = [BLDBChangedObject new];
-                changedObject.uniqueId = self.uniqueId;
-                changedObject.tableName = [[self class] tableName];
-                changedObject.objectClass = [self class];
+                changedObject.uniqueId = object.uniqueId;
+                changedObject.tableName = [[object class] tableName];
+                changedObject.objectClass = [object class];
                 changedObject.changedFiledNames = fieldNames;
                 changedObject.type = BLDBChangedObjectUpdate;
                 
                 [connection.changedObjects addObject:changedObject];
+                
+                if ([object respondsToSelector:@selector(didUpdateInConnection:)]) {
+                    [object didUpdateInConnection:connection];
+                }
             }
-        }
-        
-        if ([self respondsToSelector:@selector(didUpdateInConnection:withError:)]) {
-            [self didUpdateInConnection:connection withError:error];
         }
     }
 }
 
 - (void)deleteInConnection:(BLDatabaseConnection *)connection
+                     error:(NSError **)error
 {
-    [connection validateReadWriteInTransaction];
-    if ([self shouldDeleteInConnection:connection]) {
-        NSError *error = nil;
-        NSString *sql = [self deleteSql];
-        BOOL success = [connection.fmdb executeUpdate:sql];
-        if (!success) {
-            BLLogError(@"code = %d, messaeg = %@", connection.fmdb.lastErrorCode, connection.fmdb.lastErrorMessage);
-            error = connection.fmdb.lastError;
-        } else {
-            // 更新db字段
-            self.connection = connection;
-            
-            //NSString *cacheKey = [[self class] cacheKeyWithUniqueId:[self uniqueId]];
-            //[[self class] removeWithKey:cacheKey inCachedObjects:connection.cachedObjects];
-            
-            BLDBChangedObject *changedObject = [BLDBChangedObject new];
-            changedObject.uniqueId = self.uniqueId;
-            changedObject.tableName = [[self class] tableName];
-            changedObject.objectClass = [self class];
-            changedObject.changedFiledNames = nil;
-            changedObject.type = BLDBChangedObjectDelete;
-            
-            [connection.changedObjects addObject:changedObject];
+    [[self class] deleteObjects:@[self]
+                   inConnection:connection
+                          error:error];
+}
+
++ (void)deleteSameClassObjects:(NSArray *)objects
+                  inConnection:(BLDatabaseConnection *)connection
+                         error:(NSError **)error
+{
+    if ([objects count] > 0) {
+        NSMutableString *sql = [NSMutableString string];
+        NSString *tableName = [[[objects firstObject] class] tableName];
+        NSUInteger length = [objects count];
+        NSMutableString *tempString = [NSMutableString stringWithString:@"("];
+        NSMutableArray *uniqueIds = [NSMutableArray arrayWithCapacity:length];
+        
+        for (int i = 0; i < length; i++) {
+            [tempString appendFormat:@"?"];
+            if (i != length - 1) {
+                [tempString appendString:@","];
+            }
+            [uniqueIds addObject:[objects[i] uniqueId]];
         }
         
-        if ([self respondsToSelector:@selector(didDeleteInConnection:withError:)]) {
-            [self didDeleteInConnection:connection withError:error];
+        [tempString appendString:@")"];
+        [sql appendFormat:@"DELETE FROM %@ WHERE %@ IN %@", tableName, [[[objects firstObject] class] uniqueIdFieldName], tempString];
+        
+        BOOL success = [connection.fmdb executeUpdate:sql withArgumentsInArray:uniqueIds];
+        if (!success) {
+            BLLogError(@"code = %d, messaeg = %@", connection.fmdb.lastErrorCode, connection.fmdb.lastErrorMessage);
+            *error = connection.fmdb.lastError;
+        } else {
+            for (BLBaseDBObject *object in objects) {
+                // 更新db字段
+                object.connection = connection;
+                
+                // 清空改变的properties
+                [object.changedFieldNames removeAllObjects];
+                
+                //NSString *cacheKey = [[object class] cacheKeyWithUniqueId:[self uniqueId]];
+                //[[object class] removeWithKey:cacheKey inCachedObjects:connection.cachedObjects];
+                
+                BLDBChangedObject *changedObject = [BLDBChangedObject new];
+                changedObject.uniqueId = object.uniqueId;
+                changedObject.tableName = [[object class] tableName];
+                changedObject.objectClass = [object class];
+                changedObject.changedFiledNames = nil;
+                changedObject.type = BLDBChangedObjectDelete;
+                
+                [connection.changedObjects addObject:changedObject];
+                
+                if ([object respondsToSelector:@selector(didDeleteInConnection:)]) {
+                    [object didDeleteInConnection:connection];
+                }
+            }
         }
     }
 }
+
++ (void)deleteObjects:(NSArray *)objects
+         inConnection:(BLDatabaseConnection *)connection
+                error:(NSError **)error
+{
+    [connection validateReadWriteInTransaction];
+    NSString *preTableName = nil;
+    NSUInteger fetchBatchSize = 50;
+    NSMutableArray *deleteObjects = [NSMutableArray array];
+    
+    for (BLBaseDBObject *object in objects) {
+        NSString *tableName = [[object class] tableName];
+        if (preTableName) {
+            if ([preTableName isEqualToString:tableName]) {
+                NSUInteger count = [deleteObjects count];
+                
+                if (count == fetchBatchSize) {
+                    [self deleteSameClassObjects:deleteObjects
+                                    inConnection:connection
+                                           error:error];
+                    
+                    [deleteObjects removeAllObjects];
+                    [deleteObjects addObject:object];
+                } else {
+                    [deleteObjects addObject:object];
+                }
+            } else {
+                [self deleteSameClassObjects:deleteObjects
+                                inConnection:connection
+                                       error:error];
+                
+                [deleteObjects removeAllObjects];
+                [deleteObjects addObject:object];
+            }
+        } else {
+            [deleteObjects addObject:object];
+        }
+        preTableName = tableName;
+    }
+    
+    if ([deleteObjects count] > 0) {
+        [self deleteSameClassObjects:deleteObjects
+                        inConnection:connection
+                               error:error];
+    }
+}
+
+//+ (void)deleteObjects:(NSArray *)objects
+//         inConnection:(BLDatabaseConnection *)connection
+//                error:(NSError **)error
+//{
+//    [connection validateReadWriteInTransaction];
+//    for (BLBaseDBObject *object in objects) {
+//        NSString *sql = [object deleteSql];
+//        BOOL success = [connection.fmdb executeUpdate:sql];
+//        if (!success) {
+//            BLLogError(@"code = %d, messaeg = %@", connection.fmdb.lastErrorCode, connection.fmdb.lastErrorMessage);
+//            *error = connection.fmdb.lastError;
+//        } else {
+//            // 更新db字段
+//            object.connection = connection;
+//            
+//            // 清空改变的properties
+//            [object.changedFieldNames removeAllObjects];
+//            
+//            //NSString *cacheKey = [[object class] cacheKeyWithUniqueId:[self uniqueId]];
+//            //[[object class] removeWithKey:cacheKey inCachedObjects:connection.cachedObjects];
+//            
+//            BLDBChangedObject *changedObject = [BLDBChangedObject new];
+//            changedObject.uniqueId = object.uniqueId;
+//            changedObject.tableName = [[object class] tableName];
+//            changedObject.objectClass = [object class];
+//            changedObject.changedFiledNames = nil;
+//            changedObject.type = BLDBChangedObjectDelete;
+//            
+//            [connection.changedObjects addObject:changedObject];
+//            
+//            if ([object respondsToSelector:@selector(didDeleteInConnection:)]) {
+//                [object didDeleteInConnection:connection];
+//            }
+//        }
+//    }
+//}
 
 #pragma mark - begin end notification
 
@@ -2730,8 +3035,7 @@ std::unordered_map<Class, innerUnorderedMap> g_getterName_map;
             typeString = @" TEXT";
             break;
         default:
-            BLLogError(@"unsupport type for %zd", type);
-            assert(false);
+            NSAssert(false, @"unsupport type for %zd", type);
             break;
     }
     
@@ -2786,8 +3090,7 @@ std::unordered_map<Class, innerUnorderedMap> g_getterName_map;
         }
         BLBaseDBObjectFieldInfo *info = fieldInfoForDatabase[fieldName];
         if (!info) {
-            BLLogError(@"info is nil for fieldName = %@", fieldName);
-            assert(false);
+            NSAssert(false, @"info is nil for fieldName = %@", fieldName);
         }
         
         if (value) {

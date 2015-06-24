@@ -30,6 +30,8 @@
 
 - (void)performFetch;
 
+- (void)performFetchWithCompleteBlock:(void(^)(void))completeBlock;
+
 - (NSIndexPath *)indexPathWithObject:(id)object;
 
 - (id)objectAtIndexPath:(NSIndexPath *)indexPath;

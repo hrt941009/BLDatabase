@@ -71,8 +71,17 @@
                             where:(NSString *)where, ...;
 
 + (id)findFirstObjectInConnection:(BLDatabaseConnection *)connection
+                            where:(NSString *)where
+                        arguments:(NSArray *)arguments;
+
++ (id)findFirstObjectInConnection:(BLDatabaseConnection *)connection
                           orderBy:(NSString *)orderBy
                             where:(NSString *)where, ...;
+
++ (id)findFirstObjectInConnection:(BLDatabaseConnection *)connection
+                          orderBy:(NSString *)orderBy
+                            where:(NSString *)where
+                        arguments:(NSArray *)arguments;
 
 + (id)findFirstObjectInConnection:(BLDatabaseConnection *)connection
                        fieldNames:(NSArray *)fieldNames
@@ -92,8 +101,19 @@
 
 + (id)findFirstObjectInConnection:(BLDatabaseConnection *)connection
                        fieldNames:(NSArray *)fieldNames
+                            where:(NSString *)where
+                        arguments:(NSArray *)arguments;
+
++ (id)findFirstObjectInConnection:(BLDatabaseConnection *)connection
+                       fieldNames:(NSArray *)fieldNames
                           orderBy:(NSString *)orderBy
                             where:(NSString *)where, ...;
+
++ (id)findFirstObjectInConnection:(BLDatabaseConnection *)connection
+                       fieldNames:(NSArray *)fieldNames
+                          orderBy:(NSString *)orderBy
+                            where:(NSString *)where
+                        arguments:(NSArray *)arguments;
 
 #pragma mark - find objects with sql
 
@@ -106,14 +126,30 @@
                                where:(NSString *)where, ...;
 
 + (NSArray *)findObjectsInConnection:(BLDatabaseConnection *)connection
+                               where:(NSString *)where
+                           arguments:(NSArray *)arguments;
+
++ (NSArray *)findObjectsInConnection:(BLDatabaseConnection *)connection
                              orderBy:(NSString *)orderBy
                                where:(NSString *)where, ...;
+
++ (NSArray *)findObjectsInConnection:(BLDatabaseConnection *)connection
+                             orderBy:(NSString *)orderBy
+                               where:(NSString *)where
+                           arguments:(NSArray *)arguments;
 
 + (NSArray *)findObjectsInConnection:(BLDatabaseConnection *)connection
                              orderBy:(NSString *)orderBy
                               length:(u_int64_t)length
                               offset:(u_int64_t)offset
                                where:(NSString *)where, ...;
+
++ (NSArray *)findObjectsInConnection:(BLDatabaseConnection *)connection
+                             orderBy:(NSString *)orderBy
+                              length:(u_int64_t)length
+                              offset:(u_int64_t)offset
+                               where:(NSString *)where
+                           arguments:(NSArray *)arguments;
 
 + (NSArray *)findObjectsInConnection:(BLDatabaseConnection *)connection
                           fieldNames:(NSArray *)fieldNames;
@@ -128,8 +164,19 @@
 
 + (NSArray *)findObjectsInConnection:(BLDatabaseConnection *)connection
                           fieldNames:(NSArray *)fieldNames
+                               where:(NSString *)where
+                           arguments:(NSArray *)arguments;
+
++ (NSArray *)findObjectsInConnection:(BLDatabaseConnection *)connection
+                          fieldNames:(NSArray *)fieldNames
                              orderBy:(NSString *)orderBy
                                where:(NSString *)where, ...;
+
++ (NSArray *)findObjectsInConnection:(BLDatabaseConnection *)connection
+                          fieldNames:(NSArray *)fieldNames
+                             orderBy:(NSString *)orderBy
+                               where:(NSString *)where
+                           arguments:(NSArray *)arguments;
 
 + (NSArray *)findObjectsInConnection:(BLDatabaseConnection *)connection
                           fieldNames:(NSArray *)fieldNames
@@ -137,6 +184,14 @@
                               length:(u_int64_t)length
                               offset:(u_int64_t)offset
                                where:(NSString *)where, ...;
+
++ (NSArray *)findObjectsInConnection:(BLDatabaseConnection *)connection
+                          fieldNames:(NSArray *)fieldNames
+                             orderBy:(NSString *)orderBy
+                              length:(u_int64_t)length
+                              offset:(u_int64_t)offset
+                               where:(NSString *)where
+                           arguments:(NSArray *)arguments;
 
 #pragma mark - find object with predicate
 

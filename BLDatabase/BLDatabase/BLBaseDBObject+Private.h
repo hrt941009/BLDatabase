@@ -18,17 +18,36 @@
 
 + (NSString *)cacheKeyWithUniqueId:(NSString *)uniqueId;
 
-- (void)setRowid:(int64_t)rowid;
+#pragma mark - touched/insert/update/delete object/objects
 
-#pragma mark - touched object
+- (void)touchedInConnection:(BLDatabaseConnection *)connection
+                      error:(NSError **)error;
++ (void)touchedObjects:(NSArray *)objects
+          inConnection:(BLDatabaseConnection *)connection
+                 error:(NSError **)error;
 
-- (void)touchedInConnection:(BLDatabaseConnection *)connection;
+- (void)insertOrUpdateInConnection:(BLDatabaseConnection *)connection
+                             error:(NSError **)error;
++ (void)insertOrUpdateObjects:(NSArray *)objects
+                 inConnection:(BLDatabaseConnection *)connection
+                        error:(NSError **)error;
 
-#pragma mark - insert/update/delete
+- (void)insertInConnection:(BLDatabaseConnection *)connection
+                     error:(NSError **)error;
++ (void)insertObjects:(NSArray *)objects
+         inConnection:(BLDatabaseConnection *)connection
+                error:(NSError **)error;
 
-- (void)insertOrUpdateInConnection:(BLDatabaseConnection *)connection;
-- (void)insertInConnection:(BLDatabaseConnection *)connection;
-- (void)updateInConnection:(BLDatabaseConnection *)connection;
-- (void)deleteInConnection:(BLDatabaseConnection *)connection;
+- (void)updateInConnection:(BLDatabaseConnection *)connection
+                     error:(NSError **)error;
++ (void)updateObjects:(NSArray *)objects
+         inConnection:(BLDatabaseConnection *)connection
+                error:(NSError **)error;
+
+- (void)deleteInConnection:(BLDatabaseConnection *)connection
+                     error:(NSError **)error;
++ (void)deleteObjects:(NSArray *)objects
+         inConnection:(BLDatabaseConnection *)connection
+                error:(NSError **)error;
 
 @end

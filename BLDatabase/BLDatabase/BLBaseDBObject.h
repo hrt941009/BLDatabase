@@ -49,21 +49,13 @@ extern NSString * const BLDatabaseChangedNotification;
 
 - (BOOL)enableCachedInConnection;
 
-- (BOOL)shouldTouchedInConnection:(BLDatabaseConnection *)connection;
+- (void)didTouchedInConnection:(BLDatabaseConnection *)connection;
 
-- (BOOL)shouldInsertInConnection:(BLDatabaseConnection *)connection;
+- (void)didInsertInConnection:(BLDatabaseConnection *)connection;
 
-- (BOOL)shouldUpdateInConnection:(BLDatabaseConnection *)connection;
+- (void)didUpdateInConnection:(BLDatabaseConnection *)connection;
 
-- (BOOL)shouldDeleteInConnection:(BLDatabaseConnection *)connection;
-
-- (void)didTouchedInConnection:(BLDatabaseConnection *)connection withError:(NSError *)error;
-
-- (void)didInsertInConnection:(BLDatabaseConnection *)connection withError:(NSError *)error;
-
-- (void)didUpdateInConnection:(BLDatabaseConnection *)connection withError:(NSError *)error;
-
-- (void)didDeleteInConnection:(BLDatabaseConnection *)connection withError:(NSError *)error;
+- (void)didDeleteInConnection:(BLDatabaseConnection *)connection;
 
 @end
 

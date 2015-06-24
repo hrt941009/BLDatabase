@@ -83,7 +83,7 @@
     __weak BLDatabaseConnection *connection = self.backgroundConnection;
     [connection performReadWriteBlockInTransaction:^(BOOL *rollback) {
         NSArray *result = [BLTestObject findObjectsInConnection:connection];
-        [connection deleteObjects:result];
+        [connection deleteObjects:result error:nil];
     }];
 }
 
@@ -101,11 +101,11 @@
         int index = 0;
         for (BLTestObject *object in result) {
             if (index % 2 == 0) {
-                //                            [object setGroupName:[NSString stringWithFormat:@"%c", (arc4random() % 26) + 65]];
-                //                            object.name = [NSString stringWithFormat:@"%c", (arc4random() % 26) + 65];
-                //                            [connection insertOrUpdateObject:object];
+                [object setGroupName:[NSString stringWithFormat:@"%c", (arc4random() % 26) + 65]];
+                object.name = [NSString stringWithFormat:@"%c", (arc4random() % 26) + 65];
+                [connection updateObject:object error:nil];
             } else {
-                [connection deleteObject:object];
+                [connection deleteObject:object error:nil];
             }
             index++;
         }
@@ -114,7 +114,7 @@
             BLTestObject *object = [BLTestObject new];
             object.groupName = [NSString stringWithFormat:@"%c", (arc4random() % 26) + 65];
             object.name = [NSString stringWithFormat:@"%c", (arc4random() % 26) + 65];
-            [connection insertObject:object];
+            [connection insertObject:object error:nil];
         }
     }];
 
@@ -312,7 +312,7 @@
             object.age = 10;
             object.groupName = [NSString stringWithFormat:@"%c", (arc4random() % 26) + 65];
             object.name = [NSString stringWithFormat:@"%c", (arc4random() % 26) + 65];
-            [connection insertObject:object];
+            [connection insertObject:object error:nil];
         }
     }];
 }
@@ -326,7 +326,7 @@
     __weak BLDatabaseConnection *connection = self.backgroundConnection;
     [connection performReadWriteBlockInTransaction:^(BOOL *rollback) {
         NSArray *result = [BLTestObject findObjectsInConnection:connection];
-        [connection deleteObjects:result];
+        [connection deleteObjects:result error:nil];
     }];
 }
 

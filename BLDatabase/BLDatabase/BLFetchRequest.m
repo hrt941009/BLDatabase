@@ -14,7 +14,7 @@
 {
     self = [super init];
     if (self) {
-        _fetchBatchSize = 50;
+        //_fetchBatchSize = 50;
     }
     
     return self;

@@ -84,8 +84,7 @@ dispatch_async(dispatch_get_main_queue(), block); \
                 inConnection:(BLDatabaseConnection *)connection
 {
     if (![objectClass isSubclassOfClass:[BLBaseDBObject class]] || !connection) {
-        BLLogError(@"objectClass must be subclass of BLBaseDBObject, database must not be nil and mainQueue");
-        assert(false);
+        NSAssert(false, @"objectClass must be subclass of BLBaseDBObject, database must not be nil");
         return nil;
     }
     
@@ -157,12 +156,12 @@ dispatch_async(dispatch_get_main_queue(), block); \
     self.allSortDescriptors = [allSortDescriptors copy];
     
     // sort
-    objects = [objects sortedArrayUsingDescriptors:self.allSortDescriptors];
+    NSArray *sortedObjects = [objects sortedArrayUsingDescriptors:self.allSortDescriptors];
     NSTimeInterval time3 = [[NSDate date] timeIntervalSince1970];
     BLLogInfo(@"sort time duration = %lf", time3 - time2);
     
     // filter
-    NSArray *evaluativeObjects = [self evaluativeObjectsWithObjects:objects];
+    NSArray *evaluativeObjects = [self evaluativeObjectsWithObjects:sortedObjects];
     NSTimeInterval time4 = [[NSDate date] timeIntervalSince1970];
     BLLogInfo(@"filter time duration = %lf", time4 - time3);
     
@@ -170,7 +169,74 @@ dispatch_async(dispatch_get_main_queue(), block); \
     [self generateSectionsWithObjects:evaluativeObjects];
     self.sortedObjects = [NSMutableArray arrayWithArray:evaluativeObjects];
     _fetchedId++;
-    BLLogInfo(@"perform fetch time duration = %lf, count = %lu", [[NSDate date] timeIntervalSince1970] - time1, (unsigned long)[self.sortedObjects count]);
+    BLLogInfo(@"perform fetch time duration = %lf, count = %tu", [[NSDate date] timeIntervalSince1970] - time1, [self.sortedObjects count]);
+}
+
+- (void)performFetchWithCompleteBlock:(void(^)(void))completeBlock
+{
+    [self.connection performReadBlock:^{
+        NSTimeInterval time1 = [[NSDate date] timeIntervalSince1970];
+        // sql 查询
+        NSArray *objects = [self.objectClass findObjectsInConnection:self.connection
+                                                 fieldNames:self.request.fieldNames
+                                                      where:self.request.sqlAfterWhere];
+        async_block_mainThread(^{
+            NSTimeInterval time2 = [[NSDate date] timeIntervalSince1970];
+            BLLogInfo(@"find from db time duration = %lf", time2 - time1);
+            
+            NSArray *sortDescriptors = nil;
+            if (self.request.sortDescriptors) {
+                sortDescriptors = self.request.sortDescriptors;
+            } else {
+                sortDescriptors = [[self class] sortDescriptorsWithSortTerm:self.request.sortTerm];
+            }
+            
+            NSMutableArray *newSortDescriptors = [NSMutableArray array];
+            if (sortDescriptors) {
+                [newSortDescriptors addObjectsFromArray:sortDescriptors];
+            }
+            
+            BOOL hasRowidSort = NO;
+            NSString *rowidFieldName = [self.objectClass rowidFieldName];
+            for (NSSortDescriptor *sortDescriptor in newSortDescriptors) {
+                if ([sortDescriptor.key isEqualToString:rowidFieldName]) {
+                    hasRowidSort = YES;
+                    break;
+                }
+            }
+            if (!hasRowidSort) {
+                [newSortDescriptors addObject:[NSSortDescriptor sortDescriptorWithKey:rowidFieldName ascending:NO]];
+            }
+            self.sortDescriptorsInGroup = newSortDescriptors;
+            
+            NSMutableArray *allSortDescriptors = [NSMutableArray array];
+            if (self.hasGroup) {
+                [allSortDescriptors addObject:self.groupSortDescriptor];
+            }
+            [allSortDescriptors addObjectsFromArray:newSortDescriptors];
+            self.allSortDescriptors = [allSortDescriptors copy];
+            
+            // sort
+            NSArray *sortedObjects = [objects sortedArrayUsingDescriptors:self.allSortDescriptors];
+            NSTimeInterval time3 = [[NSDate date] timeIntervalSince1970];
+            BLLogInfo(@"sort time duration = %lf", time3 - time2);
+            
+            // filter
+            NSArray *evaluativeObjects = [self evaluativeObjectsWithObjects:sortedObjects];
+            NSTimeInterval time4 = [[NSDate date] timeIntervalSince1970];
+            BLLogInfo(@"filter time duration = %lf", time4 - time3);
+            
+            // sections
+            [self generateSectionsWithObjects:evaluativeObjects];
+            self.sortedObjects = [NSMutableArray arrayWithArray:evaluativeObjects];
+            _fetchedId++;
+            BLLogInfo(@"perform fetch time duration = %lf, count = %tu", [[NSDate date] timeIntervalSince1970] - time1, [self.sortedObjects count]);
+            
+            if (completeBlock) {
+                completeBlock();
+            }
+        });
+    }];
 }
 
 /*
@@ -249,10 +315,9 @@ dispatch_async(dispatch_get_main_queue(), block); \
 - (void)handleDatabaseChangedWithInsertObjects:(NSMutableArray *)insertObjects
                                  updateObjects:(NSMutableArray *)updateObjects
                                  deleteObjects:(NSMutableArray *)deleteObjects
-                                     fetchedId:(NSNumber *)fetchedId
 {
     NSMutableArray *copySections = [[NSMutableArray alloc] initWithArray:self.sections copyItems:YES];
-    NSMutableArray *copySortObjects = [NSMutableArray arrayWithArray:self.sortedObjects];
+    NSMutableArray *copySortObjects = [[NSMutableArray alloc] initWithArray:self.sortedObjects];
     
     // 建立mapping
     NSMutableDictionary *indexPathMapping = [NSMutableDictionary dictionary];
@@ -511,8 +576,7 @@ dispatch_async(dispatch_get_main_queue(), block); \
                         sortedObjects:copySortObjects
                               isFound:&foundRow];
             if (foundRow) {
-                BLLogError(@"insert data must not be found");
-                assert(false);
+                NSAssert(false, @"insert data must not be found");
             }
             
             indexPath = [NSIndexPath indexPathForRow:row + insertCountInSection inSection:finalSection];
@@ -582,106 +646,192 @@ dispatch_async(dispatch_get_main_queue(), block); \
     
     if (self.delegate && ([insertSections count] > 0 || [deleteSections count] > 0 || [insertIndexPaths count] > 0 ||
                           [reloadIndexPaths count] > 0 || [deleteIndexPaths count] > 0)) {
-        async_block_mainThread(^{
-            //BLLogInfo(@"insert sections = %@", insertSections);
-            //BLLogInfo(@"delete sections = %@", deleteSections);
-            //BLLogInfo(@"insert indexpaths = %@", insertIndexPaths);
-            //BLLogInfo(@"reload indexpaths = %@", reloadIndexPaths);
-            //BLLogInfo(@"delete indexpaths = %@", deleteIndexPaths);
-            if (fetchedId.longLongValue != self.fetchedId) {
-                return ;
-            }
-            
-            if (self.delegate && [self.delegate respondsToSelector:@selector(controllerWillChangeContent:)]) {
-                [self.delegate controllerWillChangeContent:self];
-            }
-            
-            if (self.delegate && [self.delegate respondsToSelector:@selector(controller:didChangeWithIndexSet:forChangeType:)]) {
-                [self.delegate controller:self didChangeWithIndexSet:insertSections forChangeType:BLFetchedResultsChangeInsert];
-                [self.delegate controller:self didChangeWithIndexSet:deleteSections forChangeType:BLFetchedResultsChangeDelete];
-            }
-            
-            if (self.delegate && [self.delegate respondsToSelector:@selector(controller:didChangeWithIndexPaths:forChangeType:)]) {
-                [self.delegate controller:self didChangeWithIndexPaths:insertIndexPaths forChangeType:BLFetchedResultsChangeInsert];
-                [self.delegate controller:self didChangeWithIndexPaths:deleteIndexPaths forChangeType:BLFetchedResultsChangeDelete];
-                [self.delegate controller:self didChangeWithIndexPaths:reloadIndexPaths forChangeType:BLFetchedResultsChangeUpdate];
-            }
-            
-            if (self.delegate && [self.delegate respondsToSelector:@selector(controllerDidChangeContent:)]) {
-                [self.delegate controllerDidChangeContent:self];
-            }
-        });
+        //BLLogInfo(@"insert sections = %@", insertSections);
+        //BLLogInfo(@"delete sections = %@", deleteSections);
+        //BLLogInfo(@"insert indexpaths = %@", insertIndexPaths);
+        //BLLogInfo(@"reload indexpaths = %@", reloadIndexPaths);
+        //BLLogInfo(@"delete indexpaths = %@", deleteIndexPaths);
+        
+        if (self.delegate && [self.delegate respondsToSelector:@selector(controllerWillChangeContent:)]) {
+            [self.delegate controllerWillChangeContent:self];
+        }
+        
+        if (self.delegate && [self.delegate respondsToSelector:@selector(controller:didChangeWithIndexSet:forChangeType:)]) {
+            [self.delegate controller:self didChangeWithIndexSet:insertSections forChangeType:BLFetchedResultsChangeInsert];
+            [self.delegate controller:self didChangeWithIndexSet:deleteSections forChangeType:BLFetchedResultsChangeDelete];
+        }
+        
+        if (self.delegate && [self.delegate respondsToSelector:@selector(controller:didChangeWithIndexPaths:forChangeType:)]) {
+            [self.delegate controller:self didChangeWithIndexPaths:insertIndexPaths forChangeType:BLFetchedResultsChangeInsert];
+            [self.delegate controller:self didChangeWithIndexPaths:deleteIndexPaths forChangeType:BLFetchedResultsChangeDelete];
+            [self.delegate controller:self didChangeWithIndexPaths:reloadIndexPaths forChangeType:BLFetchedResultsChangeUpdate];
+        }
+        
+        if (self.delegate && [self.delegate respondsToSelector:@selector(controllerDidChangeContent:)]) {
+            [self.delegate controllerDidChangeContent:self];
+        }
     }
 }
 
 - (void)handleDatabaseChangedNotification:(NSNotification *)notification
 {
+    NSNumber *fetchedId = @(_fetchedId);
     [self.connection performReadBlock:^{
-        // insertObjects updateForNewObjects updateForOldObjects deleteObjects不能有相同的对象，否则更新出错
-        NSTimeInterval time1 = [[NSDate date] timeIntervalSince1970];
-        NSMutableArray *insertObjects = [NSMutableArray array];
-        for (BLDBChangedObject *changedObject in [notification.userInfo objectForKey:BLDatabaseInsertKey]) {
-            if ([[self.objectClass tableName] isEqualToString:[changedObject tableName]]) {
-                id object = [self.objectClass findFirstObjectInConnection:self.connection
-                                                                 uniqueId:changedObject.uniqueId];
-                if (!object) {
-                    continue;
-                }
-                
-                if ([[self class] evaluateObject:object request:self.request]) {
-                    NSIndexPath *indexPath = self.indexPathMapping[[self keyWithUniqueId:changedObject.uniqueId]];
-                    if (!indexPath) {
-                        [insertObjects addObject:object];
+        if ([fetchedId longLongValue] == self.fetchedId) {
+            // insertObjects updateForNewObjects updateForOldObjects deleteObjects不能有相同的对象，否则更新出错
+            NSArray *insertObjects = [self insertObjectsWithNotification:notification];
+            NSDictionary *updateObjectsMap = [self updateObjectsMapWithNotification:notification];
+            NSArray *deleteObjects = [self deleteObjectsWithNotification:notification];
+            
+            async_block_mainThread(^{
+                NSTimeInterval time1 = [[NSDate date] timeIntervalSince1970];
+                if (fetchedId.longLongValue == self.fetchedId) {
+                    NSMutableArray *finalInsertObjects = [NSMutableArray array];
+                    NSMutableArray *finalUpdateObjects = [NSMutableArray array];
+                    NSMutableArray *finalDeleteObjects = [NSMutableArray array];
+                    
+                    for (id object in insertObjects) {
+                        if ([[self class] evaluateObject:object request:self.request]) {
+                            NSIndexPath *indexPath = self.indexPathMapping[[self keyWithUniqueId:[object uniqueId]]];
+                            if (!indexPath) {
+                                [finalInsertObjects addObject:object];
+                            }
+                        }
                     }
+                    
+                    for (NSString *uniqueId in updateObjectsMap) {
+                        NSIndexPath *indexPath = self.indexPathMapping[[self keyWithUniqueId:uniqueId]];
+                        id object = updateObjectsMap[uniqueId];
+                        BOOL isValid = NO;
+                        if (object != [NSNull null]) {
+                            isValid = [[self class] evaluateObject:object request:self.request];
+                        }
+                        
+                        if (indexPath && isValid) {
+                            [finalUpdateObjects addObject:object];
+                        } else if (indexPath && !isValid) {
+                            [finalDeleteObjects addObject:object];
+                        } else if (!indexPath && isValid) {
+                            [finalInsertObjects addObject:object];
+                        }
+                    }
+                    
+                    for (id object in deleteObjects) {
+                        NSIndexPath *indexPath = self.indexPathMapping[[self keyWithUniqueId:[object uniqueId]]];
+                        if (indexPath) {
+                            [finalDeleteObjects addObject:object];
+                        }
+                    }
+                    
+                    BLLogInfo(@"-----begin handle db change, insert count = %tu, update count = %tu, delete count = %tu", [finalInsertObjects count], [finalUpdateObjects count], [finalDeleteObjects count]);
+                    
+                    if ([finalInsertObjects count] > 0 || [finalUpdateObjects count] > 0 || [finalDeleteObjects count] > 0) {
+                        [self handleDatabaseChangedWithInsertObjects:finalInsertObjects
+                                                       updateObjects:finalUpdateObjects
+                                                       deleteObjects:finalDeleteObjects];
+                    }
+                    BLLogInfo(@"-----end handle db change, handle db change time duration = %lf", [[NSDate date] timeIntervalSince1970] - time1);
                 }
-            }
-        }
-        
-        NSMutableArray *deleteObjects = [NSMutableArray array];
-        for (BLDBChangedObject *changedObject in [notification.userInfo objectForKey:BLDatabaseDeleteKey]) {
-            if ([[self.objectClass tableName] isEqualToString:[changedObject tableName]]) {
-                NSIndexPath *indexPath = self.indexPathMapping[[self keyWithUniqueId:changedObject.uniqueId]];
-                if (indexPath) {
-                    id object = [self.objectClass new];
-                    [object setUniqueId:changedObject.uniqueId];
-                    [deleteObjects addObject:object];
-                }
-            }
-        }
-        
-        NSMutableArray *updateObjects = [NSMutableArray array];
-        for (BLDBChangedObject *changedObject in [notification.userInfo objectForKey:BLDatabaseUpdateKey]) {
-            if ([[self.objectClass tableName] isEqualToString:[changedObject tableName]]) {
-                NSIndexPath *indexPath = self.indexPathMapping[[self keyWithUniqueId:changedObject.uniqueId]];
-                id object = [self.objectClass findFirstObjectInConnection:self.connection
-                                                                 uniqueId:changedObject.uniqueId];
-                BOOL valid = NO;
-                if (object) {
-                    valid = [[self class] evaluateObject:object request:self.request];
-                } else {
-                    object = [self.objectClass new];
-                    [object setUniqueId:changedObject.uniqueId];
-                }
-                
-                if (indexPath && valid) {
-                    [updateObjects addObject:object];
-                } else if (indexPath && !valid) {
-                    [deleteObjects addObject:object];
-                } else if (!indexPath && valid) {
-                    [insertObjects addObject:object];
-                }
-            }
-        }
-        
-        if ([insertObjects count] > 0 || [updateObjects count] > 0 || [deleteObjects count] > 0) {
-            BLLogInfo(@"-----begin handle db change, insert count = %lu, update count = %lu, delete count = %lu, all count = %lu", (unsigned long)[insertObjects count], (unsigned long)[updateObjects count], (unsigned long)[deleteObjects count], [insertObjects count] + [updateObjects count] + [deleteObjects count]);
-            [self handleDatabaseChangedWithInsertObjects:insertObjects
-                                           updateObjects:updateObjects
-                                           deleteObjects:deleteObjects
-                                               fetchedId:@(_fetchedId)];
-            BLLogInfo(@"-----end handle db change, handle db change time duration = %lf", [[NSDate date] timeIntervalSince1970] - time1);
+            });
         }
     }];
+}
+
+- (NSArray *)insertObjectsWithNotification:(NSNotification *)notification
+{
+    NSMutableArray *insertObjects = [NSMutableArray array];
+    NSMutableArray *insertUniqueIds = [NSMutableArray array];
+    
+    for (BLDBChangedObject *changedObject in [notification.userInfo objectForKey:BLDatabaseInsertKey]) {
+        if ([[self.objectClass tableName] isEqualToString:[changedObject tableName]]) {
+            [insertUniqueIds addObject:changedObject.uniqueId];
+        }
+    }
+    
+    NSUInteger fetchBatchSize = 50;
+    NSUInteger allCount = [insertUniqueIds count];
+    for (int i = 0; i < allCount; i += fetchBatchSize) {
+        NSUInteger length = MIN(fetchBatchSize, allCount - i);
+        NSArray *subArray = [insertUniqueIds subarrayWithRange:NSMakeRange(i, length)];
+        NSMutableString *tempString = [NSMutableString stringWithFormat:@"("];
+        for (int i = 0; i < length; i++) {
+            [tempString appendFormat:@"?"];
+            if (i != length - 1) {
+                [tempString appendString:@","];
+            }
+        }
+        [tempString appendString:@")"];
+        
+        NSArray *result = [self.objectClass findObjectsInConnection:self.connection
+                                                              where:[NSString stringWithFormat:@"%@ IN %@", [self.objectClass uniqueIdFieldName], tempString]
+                                                          arguments:subArray];
+        [insertObjects addObjectsFromArray:result];
+    }
+    
+    return insertObjects;
+}
+
+- (NSDictionary *)updateObjectsMapWithNotification:(NSNotification *)notification
+{
+    NSMutableDictionary *updateObjectsMap = [NSMutableDictionary dictionary];
+    NSMutableArray *updateUniqueIds = [NSMutableArray array];
+    
+    for (BLDBChangedObject *changedObject in [notification.userInfo objectForKey:BLDatabaseUpdateKey]) {
+        if ([[self.objectClass tableName] isEqualToString:[changedObject tableName]]) {
+            [updateUniqueIds addObject:changedObject.uniqueId];
+        }
+    }
+    
+    NSUInteger fetchBatchSize = 50;
+    NSUInteger allCount = [updateUniqueIds count];
+    for (int i = 0; i < allCount; i += fetchBatchSize) {
+        NSUInteger length = MIN(fetchBatchSize, allCount - i);
+        NSArray *subArray = [updateUniqueIds subarrayWithRange:NSMakeRange(i, length)];
+        NSMutableString *tempString = [NSMutableString stringWithFormat:@"("];
+        for (int i = 0; i < length; i++) {
+            [tempString appendFormat:@"?"];
+            if (i != length - 1) {
+                [tempString appendString:@","];
+            }
+        }
+        [tempString appendString:@")"];
+        
+        NSArray *result = [self.objectClass findObjectsInConnection:self.connection
+                                                              where:[NSString stringWithFormat:@"%@ IN %@", [self.objectClass uniqueIdFieldName], tempString]
+                                                          arguments:subArray];
+        NSUInteger resultCount = [result count];
+        int missCount = 0;
+        for (int i = 0; i < length; i++) {
+            NSString *uniqueId = subArray[i];
+            if (i < resultCount) {
+                id object = result[i-missCount];
+                if ([uniqueId isEqualToString:[object uniqueId]]) {
+                    [updateObjectsMap setValue:object forKey:uniqueId];
+                } else {
+                    [updateObjectsMap setValue:[NSNull null] forKey:uniqueId];
+                    missCount++;
+                }
+            } else {
+                [updateObjectsMap setValue:[NSNull null] forKey:uniqueId];
+            }
+        }
+    }
+    
+    return updateObjectsMap;
+}
+
+- (NSArray *)deleteObjectsWithNotification:(NSNotification *)notification
+{
+    NSMutableArray *deleteObjects = [NSMutableArray array];
+    for (BLDBChangedObject *changedObject in [notification.userInfo objectForKey:BLDatabaseDeleteKey]) {
+        if ([[self.objectClass tableName] isEqualToString:[changedObject tableName]]) {
+            id object = [self.objectClass new];
+            [object setUniqueId:changedObject.uniqueId];
+            [deleteObjects addObject:object];
+        }
+    }
+    
+    return deleteObjects;
 }
 
 #pragma mark - indexPath & object

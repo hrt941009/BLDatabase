@@ -35,7 +35,7 @@
     
     [connection performReadWriteBlockAndWaitInTransaction:^(BOOL *rollback) {
         NSArray *result = [BLTestObject findObjectsInConnection:connection];
-        [connection deleteObjects:result];
+        [connection deleteObjects:result error:nil];
         
         result = [BLTestObject findObjectsInConnection:connection];
         XCTAssert([result count] == 0);
@@ -55,7 +55,7 @@
     
     [connection performReadWriteBlockAndWaitInTransaction:^(BOOL *rollback) {
         NSArray *result = [BLTestObject findObjectsInConnection:connection];
-        [connection deleteObjects:result];
+        [connection deleteObjects:result error:nil];
         
         result = [BLTestObject findObjectsInConnection:connection];
         XCTAssert([result count] == 0);
@@ -75,7 +75,7 @@
     [connection performReadWriteBlockAndWaitInTransaction:^(BOOL *rollback) {
         for (int i = 0; i < count; i++) {
             BLTestObject *object = [BLTestObject new];
-            [connection insertObject:object];
+            [connection insertObject:object error:nil];
         }
         
         NSArray *result = [BLTestObject findObjectsInConnection:connection];
@@ -97,7 +97,7 @@
             BLTestObject *object = [BLTestObject new];
             object.age = 20;
             object.name = @"alibaba";
-            [connection insertObject:object];
+            [connection insertObject:object error:nil];
         }
         
         NSArray *result1 = [BLTestObject findObjectsInConnection:connection];
@@ -125,7 +125,7 @@
             BLTestObject *object = [BLTestObject new];
             object.age = 20;
             object.name = @"alibaba";
-            [connection insertObject:object];
+            [connection insertObject:object error:nil];
         }
         
         NSArray *result1 = [BLTestObject findObjectsInConnection:connection];
@@ -154,7 +154,7 @@
             BLTestObject *object = [BLTestObject new];
             object.age = 20;
             object.name = @"alibaba";
-            [connection insertObject:object];
+            [connection insertObject:object error:nil];
         }
         
         BLTestObject *testObject = [BLTestObject findFirstObjectInConnection:connection fieldNames:@[@"name"] where:nil];
@@ -180,7 +180,7 @@
             BLTestObject *object = [BLTestObject new];
             object.age = 20;
             object.name = @"alibaba";
-            [connection insertObject:object];
+            [connection insertObject:object error:nil];
         }
         
         BLTestObject *testObject = [BLTestObject findFirstObjectInConnection:connection fieldNames:@[@"name"] where:nil];
@@ -205,7 +205,7 @@
         NSString *uniqueId1 = account1.uniqueId;
         account.relationship = account1;
         account1.relationship = account;
-        [connection insertObjects:@[account, account1]];
+        [connection insertObjects:@[account, account1] error:nil];
         
         BLAccount *targeAccount = [BLAccount findFirstObjectInConnection:connection uniqueId:uniqueId];
         BLAccount *targeAccount1 = [BLAccount findFirstObjectInConnection:connection uniqueId:uniqueId1];
@@ -229,7 +229,7 @@
         NSString *uniqueId2 = account2.uniqueId;
         
         account.relationships = (NSArray<BLAccount> *)@[account1, account2];
-        [connection insertObjects:@[account, account1, account2]];
+        [connection insertObjects:@[account, account1, account2] error:nil];
         
         BLAccount *targeAccount = [BLAccount findFirstObjectInConnection:connection uniqueId:uniqueId];
         NSArray *uniqueIds = @[uniqueId1, uniqueId2];
@@ -252,7 +252,7 @@
             testObject.age = 20;
             testObject.name = @"alibaba";
             testObject.groupName = @"aliyun";
-            [connection insertObject:testObject];
+            [connection insertObject:testObject error:nil];
         }
     }];
     
@@ -278,16 +278,16 @@
         
         for (BLTestObject *object in updateObjects) {
             object.name = @"alibaba1";
-            [connection updateObject:object];
+            [connection updateObject:object error:nil];
         }
-        [connection deleteObjects: deleteObjects];
+        [connection deleteObjects:deleteObjects error:nil];
         
         for (int i = 0; i < insert; i++) {
             BLTestObject *testObject = [BLTestObject new];
             testObject.age = 20;
             testObject.name = @"alibaba";
             testObject.groupName = @"aliyun";
-            [connection insertObject:testObject];
+            [connection insertObject:testObject error:nil];
         }
     }];
     
@@ -317,10 +317,10 @@
         testObject.age = 20;
         testObject.name = @"alibaba";
         testObject.groupName = @"aliyun";
-        [connection insertObject:testObject];
+        [connection insertObject:testObject error:nil];
         
         testObject.name = @"alibaba1";
-        [connection updateObject:testObject];
+        [connection updateObject:testObject error:nil];
     }];
     
     [[NSNotificationCenter defaultCenter] removeObserver:observer name:BLDatabaseChangedNotification object:database];
@@ -343,9 +343,9 @@
         testObject.age = 20;
         testObject.name = @"alibaba";
         testObject.groupName = @"aliyun";
-        [connection insertObject:testObject];
+        [connection insertObject:testObject error:nil];
         
-        [connection deleteObject:testObject];
+        [connection deleteObject:testObject error:nil];
     }];
     
     [[NSNotificationCenter defaultCenter] removeObserver:observer name:BLDatabaseChangedNotification object:database];
@@ -363,7 +363,7 @@
         testObject.name = @"alibaba";
         testObject.groupName = @"aliyun";
         uniqueId = testObject.uniqueId;
-        [connection insertObject:testObject];
+        [connection insertObject:testObject error:nil];
     }];
     
     id observer = [[NSNotificationCenter defaultCenter] addObserverForName:BLDatabaseChangedNotification
@@ -382,10 +382,10 @@
     [connection performReadWriteBlockAndWaitInTransaction:^(BOOL *rollback) {
         BLTestObject *testObject = [BLTestObject findFirstObjectInConnection:connection where:nil];
         testObject.age = 20;
-        [connection updateObject:testObject];
+        [connection updateObject:testObject error:nil];
         
         testObject.age = 20;
-        [connection updateObject:testObject];
+        [connection updateObject:testObject error:nil];
     }];
     
     [[NSNotificationCenter defaultCenter] removeObserver:observer name:BLDatabaseChangedNotification object:database];
@@ -403,7 +403,7 @@
         testObject.name = @"alibaba";
         testObject.groupName = @"aliyun";
         uniqueId = testObject.uniqueId;
-        [connection insertObject:testObject];
+        [connection insertObject:testObject error:nil];
     }];
     
     id observer = [[NSNotificationCenter defaultCenter] addObserverForName:BLDatabaseChangedNotification
@@ -422,9 +422,9 @@
     [connection performReadWriteBlockAndWaitInTransaction:^(BOOL *rollback) {
         BLTestObject *testObject = [BLTestObject findFirstObjectInConnection:connection where:nil];
         testObject.age = 20;
-        [connection updateObject:testObject];
+        [connection updateObject:testObject error:nil];
         
-        [connection deleteObject:testObject];
+        [connection deleteObject:testObject error:nil];
     }];
     
     [[NSNotificationCenter defaultCenter] removeObserver:observer name:BLDatabaseChangedNotification object:database];
@@ -442,7 +442,7 @@
         testObject.name = @"alibaba";
         testObject.groupName = @"aliyun";
         uniqueId = testObject.uniqueId;
-        [connection insertObject:testObject];
+        [connection insertObject:testObject error:nil];
     }];
     
     id observer = [[NSNotificationCenter defaultCenter] addObserverForName:BLDatabaseChangedNotification
@@ -460,9 +460,9 @@
     
     [connection performReadWriteBlockAndWaitInTransaction:^(BOOL *rollback) {
         BLTestObject *testObject = [BLTestObject findFirstObjectInConnection:connection where:nil];
-        [connection deleteObject:testObject];
+        [connection deleteObject:testObject error:nil];
         
-        [connection insertObject:testObject];
+        [connection insertObject:testObject error:nil];
     }];
     
     [[NSNotificationCenter defaultCenter] removeObserver:observer name:BLDatabaseChangedNotification object:database];
