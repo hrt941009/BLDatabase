@@ -2,7 +2,7 @@
 //  BLDatabaseConfig.h
 //  BLAlimeiDatabase
 //
-//  Created by alibaba on 15/3/15.
+//  Created by surewxw on 15/3/15.
 //  Copyright (c) 2015年 wxw. All rights reserved.
 //
 

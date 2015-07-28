@@ -2,7 +2,7 @@
 //  BLBaseDBObject+Private.h
 //  BLAlimeiDatabase
 //
-//  Created by alibaba on 15/1/26.
+//  Created by surewxw on 15/1/26.
 //  Copyright (c) 2015年 wxw. All rights reserved.
 //
 

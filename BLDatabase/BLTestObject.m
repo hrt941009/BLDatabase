@@ -2,7 +2,7 @@
 //  BLTestObject.m
 //  BLAlimeiDatabase
 //
-//  Created by alibaba on 15/1/29.
+//  Created by surewxw on 15/1/29.
 //  Copyright (c) 2015年 wxw. All rights reserved.
 //
 

@@ -2,7 +2,7 @@
 //  ViewController.m
 //  BLAlimeiDatabase
 //
-//  Created by alibaba on 15/1/21.
+//  Created by surewxw on 15/1/21.
 //  Copyright (c) 2015年 wxw. All rights reserved.
 //
 
